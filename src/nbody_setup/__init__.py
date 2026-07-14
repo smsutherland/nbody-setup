@@ -306,7 +306,7 @@ def ensemble(
         ("boxsize", "L", "kpc/h"),
         ("seed", "seed", ""),
     ]
-    maxwidth = max(len(s) for s, _, _ in parameters)
+    maxwidth = max(len(s) for _, s, _ in parameters)
     for name, display, post in parameters:
         s = "    {display:<{width}} ".format(display=display, width=maxwidth)
         if isinstance(name, str):
