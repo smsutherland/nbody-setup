@@ -7,7 +7,10 @@ authors = [
     { name = "Sagan Sutherland", email = "sagan.sutherland@uconn.edu" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "camb>=1.6.4",
+    "numpy>=2",
+]
 
 [project.scripts]
 nbody-setup = "nbody_setup:main"
