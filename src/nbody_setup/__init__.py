@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 from astropy.table import Table
+from tqdm import tqdm
 
 from . import files
 from .run_camb import run_camb
@@ -328,7 +329,7 @@ def ensemble(
         if not confirm():
             return 1
 
-    for i, row in enumerate(parameter_table):
+    for i, row in enumerate(tqdm(parameter_table)):
         target = basename.with_name(basename.name + f"_{i}")
         create_run(
             target,
