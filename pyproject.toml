@@ -1,0 +1,17 @@
+[project]
+name = "nbody-setup"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sagan Sutherland", email = "sagan.sutherland@uconn.edu" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+nbody-setup = "nbody_setup:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
