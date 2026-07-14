@@ -256,15 +256,11 @@ output_times = """# Scale Factor
 1.0
 """
 
-_job_file = """#!/bin/bash -l
-#########################################################
+_job_file = """#!/bin/bash
 #SBATCH --job-name=Nbody
 #SBATCH --output="slurm-%A.out"
-#########################################################
 #SBATCH --ntasks=64
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=150G
-#########################################################
 
 set -e
 

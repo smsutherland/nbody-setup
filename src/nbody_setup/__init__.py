@@ -156,6 +156,12 @@ def main() -> int:
         required=True,
         help="Path to gadget executable",
     )
+    ensemble_parser.add_argument(
+        "--engine",
+        choices=["none", "disbatch", "array"],
+        default="none",
+        help="Runner engine to run the ensemble",
+    )
     ensemble_parser.set_defaults(
         func=lambda args: ensemble(
             args.basename,
@@ -164,6 +170,7 @@ def main() -> int:
             args.gadget,
             args.glass,
             args.no_confirm,
+            args.engine,
         ),
     )
 
@@ -257,6 +264,7 @@ def ensemble(
     gadget: Path,
     glass: Path,
     skip_confirmation: bool,
+    engine: str,
 ) -> int:
     parameter_table: Table = Table.read(table, format="ascii")
     defaults = {
@@ -336,6 +344,39 @@ def ensemble(
             gadget,
             glass,
         )
+
+    if engine == "disbatch":
+        print(
+            "WARNING: disbatch engine hasn't been tested yet! It almost certainly doesn't work!",
+            file=sys.stderr,
+        )
+        with open("disbatch_tasks", "w") as f:
+            f.write("#DISBATCH PREFIX cd \n")
+            f.write("#DISBATCH SUFFIX ; bash job.sh &>> log\n")
+            for i in range(len(parameter_table)):
+                target = basename.with_name(basename.name + f"_{i}").resolve()
+                f.write(str(target) + "\n")
+        with open("job.sh", "w") as f:
+            f.write("""#!/bin/bash
+#SBATCH --job-name=Nbody
+#SBATCH --output="slurm-%A.out"
+#SBATCH --ntasks=16
+#SBATCH --cpus-per-task=64
+disBatch disbatch_tasks
+""")
+
+    elif engine == "array":
+        with open("job.sh", "w") as f:
+            f.write(f"""#!/bin/bash
+#SBATCH --job-name=Nbody
+#SBATCH --output="logs/slurm-%A_%a.out"
+#SBATCH --ntasks=64
+#SBATCH --cpus-per-task=16
+#SBATCH --array=0-{len(parameter_table) - 1}
+
+cd {basename}_${{SLURM_ARRAY_TASK_ID}}
+bash job.sh
+""")
 
     return 0
 
