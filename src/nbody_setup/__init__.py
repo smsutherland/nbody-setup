@@ -371,7 +371,7 @@ disBatch disbatch_tasks
 #SBATCH --job-name=Nbody
 #SBATCH --output="logs/slurm-%A_%a.out"
 #SBATCH --ntasks=64
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=1
 #SBATCH --array=0-{len(parameter_table) - 1}
 
 cd {basename}_${{SLURM_ARRAY_TASK_ID}}
