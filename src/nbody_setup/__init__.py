@@ -291,6 +291,9 @@ def ensemble(
         print("table", table, "is empty!", file=sys.stderr)
         return -1
 
+    # convert to kpc
+    parameter_table["boxsize"] *= 1000
+
     print(
         f"This will create {len(parameter_table)} N-body run{'' if len(parameter_table) == 1 else 's'} in {basename.parent}"
     )
@@ -330,8 +333,6 @@ def ensemble(
         if not confirm():
             return 1
 
-    # convert to kpc
-    parameter_table["boxsize"] *= 1000
 
     for i, row in enumerate(tqdm(parameter_table)):
         target = basename.with_name(basename.name + f"_{i}")
