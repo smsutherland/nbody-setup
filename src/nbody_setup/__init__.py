@@ -256,6 +256,7 @@ def setup_run(
         gadget,
         glass,
     )
+    return 0
 
 
 def ensemble(
