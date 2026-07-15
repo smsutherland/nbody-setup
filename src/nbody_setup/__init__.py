@@ -329,6 +329,9 @@ def ensemble(
         if not confirm():
             return 1
 
+    # convert to kpc
+    parameter_table["boxsize"] *= 1000
+
     for i, row in enumerate(tqdm(parameter_table)):
         target = basename.with_name(basename.name + f"_{i}")
         create_run(
