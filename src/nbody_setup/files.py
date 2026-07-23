@@ -283,6 +283,11 @@ if [ ! -e snap_{last_snap:03d}.hdf5 ]; then
         echo job array id: $SLURM_ARRAY_TASK_ID | tee -a gadget.log
     fi
 
-    srun --ntasks=$SLURM_CPUS_ON_NODE --cpus-per-task=1 --cpu_bind=cores --kill-on-bad-exit=1 {gadget} G3.param >> gadget.log 2>> gadget.err
+    if [ -d restartfiles ]; then
+        # restart
+        restart=1
+    fi
+
+    srun --ntasks=$SLURM_CPUS_ON_NODE --cpus-per-task=1 --cpu_bind=cores --kill-on-bad-exit=1 {gadget} G3.param $restart >> gadget.log 2>> gadget.err
 fi
 """
