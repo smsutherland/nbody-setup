@@ -48,12 +48,13 @@ pipx install 'git+https://github.com/smsutherland/nbody-setup'
 ```bash
 nbody-setup new [options] [target]
 ```
-`new` only has one positional option (`target`) which gives a path in which to set up a simulation.
-If `target` is not given, a simulation will be prepared in the current directory.
-A simulation will be prepared at the target.
-The job.sh script generated in the target directory will, if run, prepare initial conditions and run the simulation.
-The script also has an sbatch header prepared for submission to slurm.
-If you want to submit the job to slurm, I recommend checking the sbatch parameters set, and add/change parameters as needed.
+`new` only has one positional option (`target`) which gives a path in which to
+set up a simulation. If `target` is not given, a simulation will be prepared in
+the current directory. A simulation will be prepared at the target. The job.sh
+script generated in the target directory will, if run, prepare initial
+conditions and run the simulation. The script also has an sbatch header prepared
+for submission to slurm. If you want to submit the job to slurm, I recommend
+checking the sbatch parameters set, and add/change parameters as needed.
 
 The following options specify the cosmology of the run created:
 ```
@@ -79,27 +80,29 @@ The following are options for `nbody-setup` itself:
 --ics {2lpt}      What initial condition code to use
 ```
 
-Currently `--ics` only has one option: 2lpt. More options are planned, and pull requests adding more are welcome.
-Additionally, I intend to add a similar option to change simulation code, rather than requiring use of Gadget.
-Each initial conditions code may specify its own options.
+Currently `--ics` only has one option: 2lpt. More options are planned, and pull
+requests adding more are welcome. Additionally, I intend to add a similar option
+to change simulation code, rather than requiring use of Gadget. Each initial
+conditions code may specify its own options.
 
 If `--ics` is 2lpt, the following options are added:
 ```
 --2lpt PATH   Path to a 2LPTic executable
 --glass PATH  Path to a glass file to use
 ```
-If `2LPTic` is present on your PATH, then `--2lpt` may be omitted and the 2LPTic on your PATH will be used instead. if `--2lpt` is specified, it will be used instead of a PATH located executable.
-`--glass` is always required.
+If `2LPTic` is present on your PATH, then `--2lpt` may be omitted and the 2LPTic
+on your PATH will be used instead. if `--2lpt` is specified, it will be used
+instead of a PATH located executable. `--glass` is always required.
 
 #### Ensemble
 ```bash
 nbody-setup ensemble [optinos] basename table
 ```
 
-The ensemble command will create an ensemble of N-body simulations, each with different parameters.
-The parameters of an ensemble are determined by a [table](#generate-table).
-The number of rows in the table determines the number of simulations prepared.
-Simulations are simply numbered from 0 to (N-1)
+The ensemble command will create an ensemble of N-body simulations, each with
+different parameters. The parameters of an ensemble are determined by a
+[table](#generate-table). The number of rows in the table determines the number
+of simulations prepared. Simulations are simply numbered from 0 to (N-1)
 
 ```
 # EXAMPLE TABLE
@@ -109,8 +112,8 @@ Om      Ob      sigma8  ns      h       seed    boxsize N
 0.4     0.049   0.8     0.9624  0.6711  13      25      256
 ```
 
-Any column in the table may be omitted, in which case all simulations will have a default value for that parameter.
-Default values are as follows:
+Any column in the table may be omitted, in which case all simulations will have
+a default value for that parameter. Default values are as follows:
 | Name    | Default Value |
 |---------|---------------|
 | Om      | 0.3           |
@@ -122,7 +125,8 @@ Default values are as follows:
 | boxsize | 25            |
 | N       | 256           |
 
-Note for CAMELS users: the table used is similar in concept, but distinct from, the cosmo-astro-seed tables we use.
+Note for CAMELS users: the table used is similar in concept, but distinct from,
+the cosmo-astro-seed tables we use.
 
 `ensemble` requires two positional options: basename and table.
 Basename gives the base name for prepared simulations.
@@ -138,31 +142,33 @@ Table is a path to the parameter table.
 --engine {none,array} Which execution engine (if any) to prepare
 ```
 
-`--gadget` and `--ics` keep their meanings from the [new subcommand](#new) (including the options that exist as a result of the `--ics` value).
-`--engine`, if set, will prepare an execution engine to run all the generated simulations.
-`--engine=none` will forgoe the preparation of such an engine.
-`--engine=array` prepares a slurm job array to run the simulations, submittable from the generated job.sh script.
-Double check all slurm parameters present in job.sh, and change/add parameters as necessary.
+`--gadget` and `--ics` keep their meanings from the [new subcommand](#new)
+(including the options that exist as a result of the `--ics` value). `--engine`,
+if set, will prepare an execution engine to run all the generated simulations.
+`--engine=none` will forgoe the preparation of such an engine. `--engine=array`
+prepares a slurm job array to run the simulations, submittable from the
+generated job.sh script. Double check all slurm parameters present in job.sh,
+and change/add parameters as necessary.
 
 #### Generate Table
 `nbody-setup generate-table > table.txt`
 
-`generate-table` prepares a table will all columns present, ready to be filled in for [ensemble](#ensemble).
-The table is printed to standard out, so redirecting it to the desired file is recommended.
-Currently, `generate-table` accepts no command-line options.
-
+`generate-table` prepares a table will all columns present, ready to be filled
+in for [ensemble](#ensemble). The table is printed to standard out, so
+redirecting it to the desired file is recommended. Currently, `generate-table`
+accepts no command-line options.
 ```
 # This is all the columns suppored by nbody-setup ensemble.
 # Columns may be safely removed.
 # Removed columns will be replaced by a suitable default for all runs.
 # Om      | float | Ω_m total matter density
-# Ob      | float | Ω_b baryonic matter density (only used for initial power spectra)
+# Ob      | float | Ω_b baryonic matter density
 # sigma8  | float | σ_8 8 Mpc/h matter clustering
 # ns      | float | Spectral index of initial power spectra
 # h       | float | Reducede hubble constant H_0 / (100 km/s/Mpc)
 # seed    | int   | Random seed for initial conditions
 # boxsize | float | Box side length in Mpc/h
-# N       | int   | cube root of the number of particles. Must be a multiple of 64
+# N       | int   | cube root of the number of particles
 Om      Ob      sigma8  ns      h       seed    boxsize N
 ```
 
@@ -180,6 +186,7 @@ Om      Ob      sigma8  ns      h       seed    boxsize N
 - [ ] Proper and complete help command
 - [ ] Make ensemble expand one-row columns to the whole set
 - [ ] Generate shell completions
-- [ ] Don't assume glass files are 64x64x64. Either that or document that they must be such.
+- [ ] Don't assume glass files are 64x64x64. Either that or document that they
+      must be such.
 - [ ] Generate tables with values from a latin hypercube or sobol sequence
 - [ ] Initial conditions mode to simply link to a specific file(s) for ICs
