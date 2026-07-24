@@ -16,6 +16,9 @@ on how to use `nbody-setup`.
 ### Quick Navigation
   * [Installation](#installation)
   * [Usage](#usage)
+    * [New](#new)
+    * [Ensemble](#ensemble)
+    * [Generate Table](#generate-table)
 
 ### Installation
 Installation can be achieved via pip:
