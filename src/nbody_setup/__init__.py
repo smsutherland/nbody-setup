@@ -1,3 +1,4 @@
+from nbody_setup.initial_conditions.ic_class import InitialConditions
 import argparse
 import os
 import sys
@@ -8,7 +9,7 @@ from astropy.table import Table
 from tqdm import tqdm
 
 from . import files
-from .run_camb import run_camb
+from .initial_conditions import ic_options
 
 
 def main() -> int:
@@ -22,30 +23,35 @@ def main() -> int:
         type=float,
         default=0.3,
         help="Ω_m matter density parameter",
+        metavar="Ω_m",
     )
     new_parser.add_argument(
         "--Ob",
         type=float,
         default=0.049,
         help="Ω_b baryon density parameter. Only used for finding initial power spectrum.",
+        metavar="Ω_b",
     )
     new_parser.add_argument(
         "--sigma8",
         type=float,
         default=0.8,
         help="σ_8 8 Mpc/h matter clustering",
+        metavar="σ_8",
     )
     new_parser.add_argument(
         "--ns",
         type=float,
         default=0.9624,
         help="n_s initial condition spectral index",
+        metavar="n_s",
     )
     new_parser.add_argument(
         "--h",  # shortening this to -h would conflict with help
         type=float,
         default=0.6711,
         help="reduced hubble constant H_0/(100 km/s/Mpc)",
+        metavar="h",
     )
     new_parser.add_argument(
         "--seed",
@@ -54,40 +60,23 @@ def main() -> int:
         help="Seed for initial conditions",
     )
     new_parser.add_argument(
-        "--glass",
-        type=Path,
-        required=True,
-        help="Path to glass file for generating initial conditions",
-    )
-    new_parser.add_argument(
         "--boxsize",
         type=float,
         default=25,
         help="Side length for the volume in Mpc/h",
+        metavar="L",
     )
     new_parser.add_argument(
         "--N",  # keeping this long for consistency with --h
         type=int,
         default=256,
-        help="Cube root of the number of particles in the volume. Must be a multiple of 64.",
+        help="Cube root of the number of particles in the volume.",
     )
     new_parser.add_argument(
         "-y",
         "--no-confirm",
         action="store_true",
         help="Do not prompt for any confirmation",
-    )
-    new_parser.add_argument(
-        "--2lpt",
-        type=Path,
-        required=True,
-        help="Path to 2lpt executable",
-    )
-    new_parser.add_argument(
-        "--gadget",
-        type=Path,
-        required=True,
-        help="Path to gadget executable",
     )
     new_parser.set_defaults(
         func=lambda args: setup_run(
@@ -98,13 +87,20 @@ def main() -> int:
             args.ns,
             args.h,
             args.seed,
-            args.boxsize * 1000,
+            args.boxsize,
             args.N,
-            getattr(args, "2lpt"),
-            args.gadget,
-            args.glass,
             args.no_confirm,
+            gadget=args.gadget,
+            ic=ic_options[args.ics](args),
         ),
+        command="new",
+    )
+    new_parser.add_argument("--gadget", type=Path, required=True)
+    new_parser.add_argument(
+        "--ics",
+        choices=ic_options.keys(),
+        required=True,
+        help="Which IC generation to use",
     )
 
     ensemble_parser = subparsers.add_parser(
@@ -122,12 +118,6 @@ def main() -> int:
         help="Table with parameters for each simulation. See generate-table",
     )
     ensemble_parser.add_argument(
-        "--glass",
-        type=Path,
-        required=True,
-        help="Path to glass file for generating initial conditions",
-    )
-    ensemble_parser.add_argument(
         "--boxsize",
         type=float,
         default=25,
@@ -146,12 +136,6 @@ def main() -> int:
         help="Do not prompt for any confirmation",
     )
     ensemble_parser.add_argument(
-        "--2lpt",
-        type=Path,
-        required=True,
-        help="Path to 2lpt executable",
-    )
-    ensemble_parser.add_argument(
         "--gadget",
         type=Path,
         required=True,
@@ -167,12 +151,19 @@ def main() -> int:
         func=lambda args: ensemble(
             args.basename,
             args.table,
-            getattr(args, "2lpt"),
-            args.gadget,
-            args.glass,
             args.no_confirm,
             args.engine,
+            gadget=args.gadget,
+            ic=ic_options[args.ics](args),
         ),
+        command="ensemble",
+    )
+
+    ensemble_parser.add_argument(
+        "--ics",
+        choices=ic_options.keys(),
+        required=True,
+        help="Which IC generation to use",
     )
 
     generate_parser = subparsers.add_parser(
@@ -182,12 +173,20 @@ def main() -> int:
         "Any column may be safely removed. A suitable default value will be used instead.",
         usage="%(prog)s [-h] > table.txt",
     )
-    generate_parser.set_defaults(
-        func=lambda _: generate(),
-    )
+    generate_parser.set_defaults(func=lambda _: generate(), command="generate")
+
+    args, _ = parser.parse_known_args()
+    if args.command == "new":
+        ic_options[args.ics].args(new_parser)
+    if args.command == "ensemble":
+        ic_options[args.ics].args(ensemble_parser)
 
     args = parser.parse_args()
-    return args.func(args)
+    try:
+        return args.func(args)
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        return 1
 
 
 def setup_run(
@@ -200,23 +199,16 @@ def setup_run(
     seed: int,
     boxsize: float,
     N: int,
-    twolpt: Path,
-    gadget: Path,
-    glass: Path,
     skip_confirmation: bool,
+    gadget: Path,
+    ic: InitialConditions,
 ) -> int:
     bad = False
-    if not os.access(twolpt, os.X_OK):
-        bad = True
-        print(twolpt, "is not executable", file=sys.stderr)
     if not os.access(gadget, os.X_OK):
         bad = True
         print(gadget, "is not executable", file=sys.stderr)
     if target.exists() and not target.is_dir():
         print(target, "exists, but is not a directory", file=sys.stderr)
-        bad = True
-    if not glass.is_file():
-        print(glass, "is not a file", file=sys.stderr)
         bad = True
     if bad:
         return 1
@@ -238,9 +230,7 @@ def setup_run(
         if not confirm():
             return 1
 
-    twolpt = twolpt.resolve()
     gadget = gadget.resolve()
-    glass = glass.resolve()
 
     create_run(
         target,
@@ -252,9 +242,8 @@ def setup_run(
         seed,
         boxsize,
         N,
-        twolpt,
         gadget,
-        glass,
+        ic,
     )
     return 0
 
@@ -262,11 +251,10 @@ def setup_run(
 def ensemble(
     basename: Path,
     table: Path,
-    twolpt: Path,
-    gadget: Path,
-    glass: Path,
     skip_confirmation: bool,
     engine: str,
+    gadget: Path,
+    ic: InitialConditions,
 ) -> int:
     parameter_table: Table = Table.read(table, format="ascii")
     defaults = {
@@ -333,7 +321,6 @@ def ensemble(
         if not confirm():
             return 1
 
-
     for i, row in enumerate(tqdm(parameter_table)):
         target = basename.with_name(basename.name + f"_{i}")
         create_run(
@@ -346,9 +333,8 @@ def ensemble(
             row["seed"],
             row["boxsize"],
             row["N"],
-            twolpt,
             gadget,
-            glass,
+            ic,
         )
 
     if engine == "disbatch":
@@ -419,23 +405,25 @@ def create_run(
     seed: int,
     boxsize: float,
     N: int,
-    twolpt: Path,
     gadget: Path,
-    glass: Path,
+    ic: InitialConditions,
 ):
     target.mkdir(parents=True, exist_ok=True)
 
     # Prepare ICs
     ic_dir = target / "ICs"
     ic_dir.mkdir(exist_ok=True)
-    twolpt_params = files.twolpt(h, Om, 1 - Om, seed, sigma8, glass, N, boxsize)
-    with open(ic_dir / "2LPT.param", "w") as f:
-        f.write(twolpt_params)
-
-    pk, params = run_camb(Omega_b=Ob, Omega_cdm=Om - Ob, h=h, ns=ns)
-    with open(ic_dir / "CAMB.params", "w") as f:
-        f.write(str(params))
-    np.savetxt(ic_dir / "Pk_m_z=0.000.txt", pk)
+    ic.setup(
+        ic_dir,
+        Om,
+        Ob,
+        sigma8,
+        ns,
+        h,
+        seed,
+        boxsize,
+        N,
+    )
 
     gadget_params = files.gadget(h, Om, 1 - Om, boxsize)
     with open(target / "G3.param", "w") as f:
@@ -443,7 +431,6 @@ def create_run(
     with open(target / "output_list.txt", "w") as f:
         f.write(files.output_times)
     jobscript = files.jobscript(
-        twolpt,
         91,  # TODO: better handling of output times
         gadget,
     )

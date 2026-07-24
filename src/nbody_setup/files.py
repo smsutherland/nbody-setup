@@ -1,31 +1,7 @@
 import os
 from pathlib import Path
 
-__all__ = ["twolpt", "gadget", "output_times", "jobscript"]
-
-
-def twolpt(
-    h: float,
-    Om: float,
-    Ol: float,
-    seed: int,
-    sigma8: float,
-    glass: Path,
-    N: int,
-    box: float,
-):
-    return _twolpt_file.format(
-        Nmesh=N * 2,
-        N=N,
-        box=box,
-        glass=glass,
-        tile=N // 64,
-        Omega_m=Om,
-        Omega_l=Ol,
-        h=h,
-        sigma_8=sigma8,
-        seed=seed,
-    )
+__all__ = ["gadget", "output_times", "jobscript"]
 
 
 def gadget(
@@ -37,7 +13,7 @@ def gadget(
     return _gadget_file.format(Om=Om, Ol=Ol, h=h, boxsize=box)
 
 
-def jobscript(twolpt: Path, num_snaps: int, gadget: Path):
+def jobscript(num_snaps: int, gadget: Path):
     if "LOADEDMODULES" in os.environ:
         modules = "module --force purge\n" + "".join(
             "module load " + m + "\n" for m in os.environ["LOADEDMODULES"].split(":")
@@ -46,46 +22,10 @@ def jobscript(twolpt: Path, num_snaps: int, gadget: Path):
         modules = ""
     return _job_file.format(
         modules=modules,
-        twolpt=twolpt,
         last_snap=num_snaps - 1,
         gadget=gadget,
     )
 
-
-_twolpt_file = """Nmesh                           {Nmesh}
-Nsample                         {N}
-Box                             {box}
-FileBase                        ics
-OutputDir                       ./
-GlassFile                       {glass}
-GlassTileFac                    {tile}
-Omega                           {Omega_m:.4f}
-OmegaLambda                     {Omega_l:.4f}
-OmegaBaryon                     0.0
-OmegaDM_2ndSpecies              0.0
-HubbleParam                     {h}
-Redshift                        127
-Sigma8                          {sigma_8:.4f}
-SphereMode                      0
-WhichSpectrum                   2
-FileWithInputSpectrum           ./Pk_m_z=0.000.txt
-InputSpectrum_UnitLength_in_cm  3.085678e24
-ShapeGamma                      0.201
-PrimordialIndex                 1.0
-
-Phase_flip                      0
-RayleighSampling                1
-Seed                            {seed}
-
-NumFilesWrittenInParallel       8
-UnitLength_in_cm                3.085678e21
-UnitMass_in_g                   1.989e43
-UnitVelocity_in_cm_per_s        1e5
-
-WDM_On                          0
-WDM_Vtherm_On                   0
-WDM_PartMass_in_kev             10.0
-"""
 
 _gadget_file = """InitCondFile              ./ICs/ics
 OutputDir                 ./
@@ -267,11 +207,9 @@ set -e
 {modules}
 
 # IC generation
-if [ ! -e ICs/ics.0 ]; then
-    pushd ICs
-    srun --ntasks=8 --cpus-per-task=1 {twolpt} 2LPT.param >> logIC
-    popd
-fi
+pushd ICs
+bash ./make_ic.sh
+popd
 
 # Gadget
 # Has the simulation already run?
