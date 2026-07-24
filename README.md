@@ -145,7 +145,7 @@ Table is a path to the parameter table.
 `--gadget` and `--ics` keep their meanings from the [new subcommand](#new)
 (including the options that exist as a result of the `--ics` value). `--engine`,
 if set, will prepare an execution engine to run all the generated simulations.
-`--engine=none` will forgoe the preparation of such an engine. `--engine=array`
+`--engine=none` will forgo the preparation of such an engine. `--engine=array`
 prepares a slurm job array to run the simulations, submittable from the
 generated job.sh script. Double check all slurm parameters present in job.sh,
 and change/add parameters as necessary.
