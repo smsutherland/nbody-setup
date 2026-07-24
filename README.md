@@ -125,7 +125,7 @@ a default value for that parameter. Default values are as follows:
 | boxsize | 25            |
 | N       | 256           |
 
-Note for CAMELS users: the table used is similar in concept, but distinct from,
+Note for CAMELS users: the table used is similar in concept to, but distinct from,
 the cosmo-astro-seed tables we use.
 
 `ensemble` requires two positional options: basename and table.
