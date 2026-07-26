@@ -14,7 +14,7 @@ from .initial_conditions import ic_options
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(required=True)
+    subparsers = parser.add_subparsers(required=True, dest="command")
 
     new_parser = subparsers.add_parser("new", help="Prepare a single N-body run")
     new_parser.add_argument("target", nargs="?", type=Path, default=Path.cwd())
@@ -93,7 +93,6 @@ def main() -> int:
             gadget=args.gadget,
             ic=ic_options[args.ics](args),
         ),
-        command="new",
     )
     new_parser.add_argument("--gadget", type=Path, required=True)
     new_parser.add_argument(
@@ -156,7 +155,6 @@ def main() -> int:
             gadget=args.gadget,
             ic=ic_options[args.ics](args),
         ),
-        command="ensemble",
     )
 
     ensemble_parser.add_argument(
@@ -173,7 +171,7 @@ def main() -> int:
         "Any column may be safely removed. A suitable default value will be used instead.",
         usage="%(prog)s [-h] > table.txt",
     )
-    generate_parser.set_defaults(func=lambda _: generate(), command="generate")
+    generate_parser.set_defaults(func=lambda _: generate())
 
     args, _ = parser.parse_known_args()
     if args.command == "new":
