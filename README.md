@@ -190,3 +190,4 @@ Om      Ob      sigma8  ns      h       seed    boxsize N
       must be such.
 - [ ] Generate tables with values from a latin hypercube or sobol sequence
 - [ ] Initial conditions mode to simply link to a specific file(s) for ICs
+- [ ] Define a cosmology class to use
