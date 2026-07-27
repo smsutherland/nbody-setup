@@ -1,6 +1,4 @@
-from nbody_setup.initial_conditions.ic_class import InitialConditions
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -8,8 +6,10 @@ import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
 
-from . import files
 from .initial_conditions import ic_options
+from .initial_conditions.ic_class import InitialConditions
+from .sim import sim_options
+from .sim.sim_class import Simulator
 
 
 def main() -> int:
@@ -90,16 +90,21 @@ def main() -> int:
             args.boxsize,
             args.N,
             args.no_confirm,
-            gadget=args.gadget,
+            simulator=sim_options[args.sim](args),
             ic=ic_options[args.ics](args),
         ),
     )
-    new_parser.add_argument("--gadget", type=Path, required=True)
     new_parser.add_argument(
         "--ics",
         choices=ic_options.keys(),
         required=True,
         help="Which IC generation to use",
+    )
+    new_parser.add_argument(
+        "--sim",
+        choices=sim_options.keys(),
+        required=True,
+        help="Which simulation code to use",
     )
 
     ensemble_parser = subparsers.add_parser(
@@ -135,16 +140,16 @@ def main() -> int:
         help="Do not prompt for any confirmation",
     )
     ensemble_parser.add_argument(
-        "--gadget",
-        type=Path,
-        required=True,
-        help="Path to gadget executable",
-    )
-    ensemble_parser.add_argument(
         "--engine",
         choices=["none", "disbatch", "array"],
         default="none",
         help="Runner engine to run the ensemble",
+    )
+    new_parser.add_argument(
+        "--sim",
+        choices=sim_options.keys(),
+        required=True,
+        help="Which simulation code to use",
     )
     ensemble_parser.set_defaults(
         func=lambda args: ensemble(
@@ -152,7 +157,7 @@ def main() -> int:
             args.table,
             args.no_confirm,
             args.engine,
-            gadget=args.gadget,
+            simulator=sim_options[args.sim](args),
             ic=ic_options[args.ics](args),
         ),
     )
@@ -176,8 +181,10 @@ def main() -> int:
     args, _ = parser.parse_known_args()
     if args.command == "new":
         ic_options[args.ics].args(new_parser)
+        sim_options[args.sim].args(new_parser)
     if args.command == "ensemble":
         ic_options[args.ics].args(ensemble_parser)
+        sim_options[args.sim].args(ensemble_parser)
 
     args = parser.parse_args()
     try:
@@ -198,17 +205,11 @@ def setup_run(
     boxsize: float,
     N: int,
     skip_confirmation: bool,
-    gadget: Path,
+    simulator: Simulator,
     ic: InitialConditions,
 ) -> int:
-    bad = False
-    if not os.access(gadget, os.X_OK):
-        bad = True
-        print(gadget, "is not executable", file=sys.stderr)
     if target.exists() and not target.is_dir():
         print(target, "exists, but is not a directory", file=sys.stderr)
-        bad = True
-    if bad:
         return 1
 
     print(f"This will create an N-body run in {target}")
@@ -228,8 +229,6 @@ def setup_run(
         if not confirm():
             return 1
 
-    gadget = gadget.resolve()
-
     create_run(
         target,
         Om,
@@ -240,7 +239,7 @@ def setup_run(
         seed,
         boxsize,
         N,
-        gadget,
+        simulator,
         ic,
     )
     return 0
@@ -251,7 +250,7 @@ def ensemble(
     table: Path,
     skip_confirmation: bool,
     engine: str,
-    gadget: Path,
+    simulator: Simulator,
     ic: InitialConditions,
 ) -> int:
     parameter_table: Table = Table.read(table, format="ascii")
@@ -331,7 +330,7 @@ def ensemble(
             row["seed"],
             row["boxsize"],
             row["N"],
-            gadget,
+            simulator,
             ic,
         )
 
@@ -403,7 +402,7 @@ def create_run(
     seed: int,
     boxsize: float,
     N: int,
-    gadget: Path,
+    simulator: Simulator,
     ic: InitialConditions,
 ):
     target.mkdir(parents=True, exist_ok=True)
@@ -423,17 +422,17 @@ def create_run(
         N,
     )
 
-    gadget_params = files.gadget(h, Om, 1 - Om, boxsize)
-    with open(target / "G3.param", "w") as f:
-        f.write(gadget_params)
-    with open(target / "output_list.txt", "w") as f:
-        f.write(files.output_times)
-    jobscript = files.jobscript(
-        91,  # TODO: better handling of output times
-        gadget,
+    simulator.setup(
+        target,
+        Om,
+        Ob,
+        sigma8,
+        ns,
+        h,
+        seed,
+        boxsize,
+        N,
     )
-    with open(target / "job.sh", "w") as f:
-        f.write(jobscript)
 
 
 def confirm():
