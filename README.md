@@ -174,7 +174,7 @@ Om      Ob      sigma8  ns      h       seed    boxsize N
 
 ### To-Dos
 - [x] Generic over IC code
-- [ ] Generic over simulation code
+- [x] Generic over simulation code
   - [ ] Glue between different IC formats
 - [ ] Configurable output times
   - [ ] Output in a format accepted by the generic simulation code
