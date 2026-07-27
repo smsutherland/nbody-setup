@@ -180,6 +180,27 @@ accepts no command-line options.
 Om      Ob      sigma8  ns      h       seed    boxsize N
 ```
 
+### Adding new codes
+`nbody-setup` is meant to be as agnostic as possible to the actual codes running
+the simulation. Currently, the initial condition generating code and the
+simulating code can be varried independently.
+
+New initial conditions codes can be added in
+src/nbody_setup/initial_conditions/ by creating a new class inheriting from
+`nbody_setup.initial_conditions.ic_class.InitialConditions`. See the
+documentation of that parent class for what exactly the functions should do.
+Add your new class to the `src.nbody_setup.initial_conditions.ic_options` dict.
+The key for the dict will be used as a choice for `--ics=...`. The value should
+be the class itself, **not an instance of the class**.
+
+Similarly, new simulation codes can be added in src/nbody_setup/sim/ with a
+class inheriting from `nbody_setup.sim.sim_class.Simulator`. Add your new class
+to `src.nbody_setup.initial_conditions.ic_options`.
+
+Currently, `nbody-setup` does not make any guarantees about compatibility
+between different initial condition and simulation codes. However, this feature
+is planned.
+
 ### To-Dos
 - [x] Generic over IC code
 - [x] Generic over simulation code
