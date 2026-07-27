@@ -1,7 +1,6 @@
 import os
 import shutil
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +9,6 @@ from nbody_setup.initial_conditions.ic_class import InitialConditions
 from nbody_setup.run_camb import run_camb
 
 
-@dataclass
 class TwoLPT(InitialConditions):
     twolpt_path: Path
     glass_file: Path

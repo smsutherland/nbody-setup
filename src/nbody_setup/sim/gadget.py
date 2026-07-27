@@ -1,13 +1,11 @@
 import os
 import shutil
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 from pathlib import Path
 
 from nbody_setup.sim.sim_class import Simulator
 
 
-@dataclass
 class Gadget(Simulator):
     gadget: Path
 
