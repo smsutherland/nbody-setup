@@ -8,10 +8,6 @@ class InitialConditions:
     @abstractmethod
     def args(cls, parser: ArgumentParser): ...
 
-    @classmethod
-    @abstractmethod
-    def is_selected(cls, args: Namespace) -> bool: ...
-
     @abstractmethod
     def __init__(self, args: Namespace): ...
 
