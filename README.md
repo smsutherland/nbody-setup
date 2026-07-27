@@ -76,14 +76,13 @@ The following are options for `nbody-setup` itself:
 ```
 -h, --help        Display a help message and immediately exit
 -y, --no-confirm  Skip asking for confirmation before making a simulation
---gadget PATH     Path to a Gadget-III executable
+--sim {gadget}    Path to a Gadget-III executable
 --ics {2lpt}      What initial condition code to use
 ```
 
 Currently `--ics` only has one option: 2lpt. More options are planned, and pull
-requests adding more are welcome. Additionally, I intend to add a similar option
-to change simulation code, rather than requiring use of Gadget. Each initial
-conditions code may specify its own options.
+requests adding more are welcome. Each initial conditions code may specify its
+own options.
 
 If `--ics` is 2lpt, the following options are added:
 ```
@@ -94,9 +93,18 @@ If `2LPTic` is present on your PATH, then `--2lpt` may be omitted and the 2LPTic
 on your PATH will be used instead. if `--2lpt` is specified, it will be used
 instead of a PATH located executable. `--glass` is always required.
 
+Similarly, `--sim` only has one option: gadget. More options are planned.
+
+If `--sim` is gadget, the following option is needed:
+```
+--gadget PATH  Path to a Gadget-III executable
+```
+If `P-Gadget3` is present on your PATH, then `--gadget` may be omitted, similar
+to the behavior with `2LPTic`.
+
 #### Ensemble
 ```bash
-nbody-setup ensemble [optinos] basename table
+nbody-setup ensemble [options] basename table
 ```
 
 The ensemble command will create an ensemble of N-body simulations, each with
@@ -137,18 +145,18 @@ Table is a path to the parameter table.
 ```
 -h, --help            Display a help message and immediately exit
 -y, --no-confirm      Skip asking for confirmation before making a simulation
---gadget PATH         Path to a Gadget-III executable
+--sim {gadget}        What simulation code to use
 --ics {2lpt}          What initial condition code to use
 --engine {none,array} Which execution engine (if any) to prepare
 ```
 
-`--gadget` and `--ics` keep their meanings from the [new subcommand](#new)
-(including the options that exist as a result of the `--ics` value). `--engine`,
-if set, will prepare an execution engine to run all the generated simulations.
-`--engine=none` will forgo the preparation of such an engine. `--engine=array`
-prepares a slurm job array to run the simulations, submittable from the
-generated job.sh script. Double check all slurm parameters present in job.sh,
-and change/add parameters as necessary.
+`--sim` and `--ics` keep their meanings from the [new subcommand](#new)
+(including the options that exist as a result of the `--ics` and `--gadget`
+values). `--engine`, if set, will prepare an execution engine to run all the
+generated simulations. `--engine=none` will forgo the preparation of such an
+engine. `--engine=array` prepares a slurm job array to run the simulations,
+submittable from the generated job.sh script. Double check all slurm parameters
+present in job.sh, and change/add parameters as necessary.
 
 #### Generate Table
 `nbody-setup generate-table > table.txt`
