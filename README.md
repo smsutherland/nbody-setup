@@ -19,6 +19,7 @@ on how to use `nbody-setup`.
     * [New](#new)
     * [Ensemble](#ensemble)
     * [Generate Table](#generate-table)
+  * [Adding New Codes](#adding-new-codes)
 
 ### Installation
 Installation can be achieved via pip:
@@ -201,6 +202,15 @@ Currently, `nbody-setup` does not make any guarantees about compatibility
 between different initial condition and simulation codes. However, this feature
 is planned.
 
+### A note on modules
+On systems that use TACC's
+[Lmod](https://tacc.utexas.edu/research/tacc-research/lmod/) system, the set of
+modules loaded when `nbody-setup` is run is detected, then the same set of
+modules are loaded when the simulation is run. In other words, load the modules
+needed for a simulation before running `nbody-setup`. Currently `nbody-setup`
+does not support loading different modules for the simulation code and initial
+conditions code.
+
 ### To-Dos
 - [x] Generic over IC code
 - [x] Generic over simulation code
@@ -220,3 +230,6 @@ is planned.
 - [ ] Generate tables with values from a latin hypercube or sobol sequence
 - [ ] Initial conditions mode to simply link to a specific file(s) for ICs
 - [ ] Define a cosmology class to use
+- [ ] Custom modules
+  - [ ] Differing modules for ICs vs simulation
+  - [ ] Move modules code out of gadget
