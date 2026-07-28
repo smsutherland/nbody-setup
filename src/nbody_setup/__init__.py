@@ -146,7 +146,7 @@ def main() -> int:
         default="none",
         help="Runner engine to run the ensemble",
     )
-    new_parser.add_argument(
+    ensemble_parser.add_argument(
         "--sim",
         choices=sim_options.keys(),
         required=True,
