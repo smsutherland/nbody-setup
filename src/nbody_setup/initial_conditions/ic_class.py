@@ -52,5 +52,7 @@ class InitialConditions:
             to read.
         Optional features which are recommended are:
         1. Pipe stdout and stderr to log files.
+        The script should NOT:
+        1. Load any modules.
         """
         ...

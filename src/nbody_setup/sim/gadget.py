@@ -49,19 +49,11 @@ class Gadget(Simulator):
             for t in _output_times:
                 f.write(str(t) + "\n")
 
-        if "LOADEDMODULES" in os.environ:
-            modules = "module --force purge\n" + "".join(
-                "module load " + m + "\n"
-                for m in os.environ["LOADEDMODULES"].split(":")
-            )
-        else:
-            modules = ""
-        jobscript = _job_file.format(
-            modules=modules,
+        jobscript = _run_file.format(
             last_snap=len(_output_times) - 1,
             gadget=self.gadget,
         )
-        with open(target / "job.sh", "w") as f:
+        with open(target / "run.sh", "w") as f:
             f.write(jobscript)
 
 
@@ -168,22 +160,8 @@ _output_times = [
 ]
 # fmt: on
 
-_job_file = """#!/bin/bash
-#SBATCH --job-name=Nbody
-#SBATCH --output="slurm-%A.out"
-#SBATCH --ntasks=64
-#SBATCH --cpus-per-task=1
-
+_run_file = """#!/bin/bash
 set -e
-
-{modules}
-
-# IC generation
-pushd ICs
-bash ./make_ic.sh
-popd
-
-# Gadget
 # Has the simulation already run?
 if [ ! -e snap_{last_snap:03d}.hdf5 ]; then
     # It hasn't! Let's run it!

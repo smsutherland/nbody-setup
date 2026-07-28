@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -433,6 +434,21 @@ def create_run(
         boxsize,
         N,
     )
+
+    if "LOADEDMODULES" in os.environ:
+        modules = "module --force purge\n" + "".join(
+            "module load " + m + "\n" for m in os.environ["LOADEDMODULES"].split(":")
+        )
+    else:
+        modules = ""
+
+    with open(target / "job.sh", "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write(modules)
+        f.write("pushd ICs\n")
+        f.write("bash ./make_ic.sh >> ic.log 2>> ic.err\n")
+        f.write("popd\n")
+        f.write("bash ./run.sh >> sim.log 2>> sim.err\n")
 
 
 def confirm():

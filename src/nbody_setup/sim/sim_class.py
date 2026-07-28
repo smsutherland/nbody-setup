@@ -44,10 +44,8 @@ class Simulator:
         other parameters which may be necessary running the simulation. Here you
         can create parameter files and prepare any other files needed for the
         simulation code to use. The only requirements are:
-        1. A bash script named job.sh exists. This is where the script to
+        1. A bash script named run.sh exists. This is where the script to
             run the simulation code should go.
-        2. The bash script should run the initial conditions script make_ic.sh
-            in the initial conditions directory "ICs/".
         Optional features which are recommended are:
         1. Don't run the simulation if it is already completed. This can help
             with resuming large array jobs.
@@ -55,5 +53,7 @@ class Simulator:
             applicable).
         3. Don't run the initial conditions script if ICs already exist.
         4. Pipe simulation stdout and stderr to log files.
+        The script should NOT:
+        1. Load any modules.
         """
         ...

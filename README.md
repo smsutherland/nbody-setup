@@ -232,4 +232,4 @@ conditions code.
 - [ ] Define a cosmology class to use
 - [ ] Custom modules
   - [ ] Differing modules for ICs vs simulation
-  - [ ] Move modules code out of gadget
+  - [x] Move modules code out of gadget
