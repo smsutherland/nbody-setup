@@ -7,6 +7,7 @@ import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
 
+from .cosmology import Cosmology
 from .initial_conditions import ic_options
 from .initial_conditions.ic_class import InitialConditions
 from .sim import sim_options
@@ -19,41 +20,7 @@ def main() -> int:
 
     new_parser = subparsers.add_parser("new", help="Prepare a single N-body run")
     new_parser.add_argument("target", nargs="?", type=Path, default=Path.cwd())
-    new_parser.add_argument(
-        "--Om",
-        type=float,
-        default=0.3,
-        help="Ω_m matter density parameter",
-        metavar="Ω_m",
-    )
-    new_parser.add_argument(
-        "--Ob",
-        type=float,
-        default=0.049,
-        help="Ω_b baryon density parameter. Only used for finding initial power spectrum.",
-        metavar="Ω_b",
-    )
-    new_parser.add_argument(
-        "--sigma8",
-        type=float,
-        default=0.8,
-        help="σ_8 8 Mpc/h matter clustering",
-        metavar="σ_8",
-    )
-    new_parser.add_argument(
-        "--ns",
-        type=float,
-        default=0.9624,
-        help="n_s initial condition spectral index",
-        metavar="n_s",
-    )
-    new_parser.add_argument(
-        "--h",  # shortening this to -h would conflict with help
-        type=float,
-        default=0.6711,
-        help="reduced hubble constant H_0/(100 km/s/Mpc)",
-        metavar="h",
-    )
+    Cosmology.args(new_parser)
     new_parser.add_argument(
         "--seed",
         type=int,
@@ -82,11 +49,7 @@ def main() -> int:
     new_parser.set_defaults(
         func=lambda args: setup_run(
             args.target,
-            args.Om,
-            args.Ob,
-            args.sigma8,
-            args.ns,
-            args.h,
+            Cosmology(args.Om, args.Ob, args.sigma8, args.ns, args.h),
             args.seed,
             args.boxsize,
             args.N,
@@ -197,11 +160,7 @@ def main() -> int:
 
 def setup_run(
     target: Path,
-    Om: float,
-    Ob: float,
-    sigma8: float,
-    ns: float,
-    h: float,
+    cosmology: Cosmology,
     seed: int,
     boxsize: float,
     N: int,
@@ -217,12 +176,12 @@ def setup_run(
     if target.exists() and next(target.iterdir(), None) is not None:
         print("    This directory exists and is not empty!")
     print("The run will have the following parameters")
-    print(f"    Ω_m  = {Om}")
-    print(f"    Ω_b  = {Ob} (for initial power spectrum)")
-    print(f"    Ω_Λ  = {1 - Om}")
-    print(f"    H_0  = {h * 100} km/s/Mpc")
-    print(f"    σ_8  = {sigma8}")
-    print(f"    n_s  = {ns}")
+    print(f"    Ω_m  = {cosmology.Om}")
+    print(f"    Ω_b  = {cosmology.Ob} (for initial power spectrum)")
+    print(f"    Ω_Λ  = {1 - cosmology.Om}")
+    print(f"    H_0  = {cosmology.h * 100} km/s/Mpc")
+    print(f"    σ_8  = {cosmology.sigma8}")
+    print(f"    n_s  = {cosmology.ns}")
     print(f"    N    = {N} (total = {N * N * N})")
     print(f"    L    = {boxsize} kpc/h")
     print(f"    seed = {seed}")
@@ -232,11 +191,7 @@ def setup_run(
 
     create_run(
         target,
-        Om,
-        Ob,
-        sigma8,
-        ns,
-        h,
+        cosmology,
         seed,
         boxsize,
         N,
@@ -323,11 +278,13 @@ def ensemble(
         target = basename.with_name(basename.name + f"_{i}")
         create_run(
             target,
-            row["Om"],
-            row["Ob"],
-            row["sigma8"],
-            row["ns"],
-            row["h"],
+            Cosmology(
+                row["Om"],
+                row["Ob"],
+                row["sigma8"],
+                row["ns"],
+                row["h"],
+            ),
             row["seed"],
             row["boxsize"],
             row["N"],
@@ -395,11 +352,7 @@ def generate() -> int:
 
 def create_run(
     target: Path,
-    Om: float,
-    Ob: float,
-    sigma8: float,
-    ns: float,
-    h: float,
+    cosmology: Cosmology,
     seed: int,
     boxsize: float,
     N: int,
@@ -413,11 +366,7 @@ def create_run(
     ic_dir.mkdir(exist_ok=True)
     ic.setup(
         ic_dir,
-        Om,
-        Ob,
-        sigma8,
-        ns,
-        h,
+        cosmology,
         seed,
         boxsize,
         N,
@@ -425,11 +374,7 @@ def create_run(
 
     simulator.setup(
         target,
-        Om,
-        Ob,
-        sigma8,
-        ns,
-        h,
+        cosmology,
         seed,
         boxsize,
         N,

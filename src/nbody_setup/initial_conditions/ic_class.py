@@ -2,6 +2,8 @@ from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.cosmology import Cosmology
+
 
 class InitialConditions:
     @classmethod
@@ -28,11 +30,7 @@ class InitialConditions:
     def setup(
         self,
         ic_dir: Path,
-        Om: float,
-        Ob: float,
-        sigma8: float,
-        ns: float,
-        h: float,
+        cosmology: Cosmology,
         seed: int,
         boxsize: float,
         N: int,

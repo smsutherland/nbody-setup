@@ -2,6 +2,7 @@ from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.cosmology import Cosmology
 
 class Simulator:
     @classmethod
@@ -28,11 +29,7 @@ class Simulator:
     def setup(
         self,
         target: Path,
-        Om: float,
-        Ob: float,
-        sigma8: float,
-        ns: float,
-        h: float,
+        cosmology: Cosmology,
         seed: int,
         boxsize: float,
         N: int,

@@ -3,6 +3,7 @@ import shutil
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.cosmology import Cosmology
 from nbody_setup.sim.sim_class import Simulator
 
 
@@ -32,16 +33,14 @@ class Gadget(Simulator):
     def setup(
         self,
         target: Path,
-        Om: float,
-        Ob: float,
-        sigma8: float,
-        ns: float,
-        h: float,
+        cosmology: Cosmology,
         seed: int,
         boxsize: float,
         N: int,
     ):
-        gadget_params = _gadget_file.format(Om=Om, Ol=1 - Om, h=h, boxsize=boxsize)
+        gadget_params = _gadget_file.format(
+            Om=cosmology.Om, Ol=1 - cosmology.Om, h=cosmology.h, boxsize=boxsize
+        )
         with open(target / "G3.param", "w") as f:
             f.write(gadget_params)
         with open(target / "output_list.txt", "w") as f:

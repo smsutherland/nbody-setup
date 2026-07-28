@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from nbody_setup.cosmology import Cosmology
 from nbody_setup.initial_conditions.ic_class import InitialConditions
 from nbody_setup.run_camb import run_camb
 
@@ -46,11 +47,7 @@ class TwoLPT(InitialConditions):
     def setup(
         self,
         ic_dir: Path,
-        Om: float,
-        Ob: float,
-        sigma8: float,
-        ns: float,
-        h: float,
+        cosmology: Cosmology,
         seed: int,
         boxsize: float,
         N: int,
@@ -62,16 +59,21 @@ class TwoLPT(InitialConditions):
             box=boxsize,
             glass=self.glass_file,
             tile=N // 64,
-            Omega_m=Om,
-            Omega_l=1 - Om,
-            h=h,
-            sigma_8=sigma8,
+            Omega_m=cosmology.Om,
+            Omega_l=1 - cosmology.Om,
+            h=cosmology.h,
+            sigma_8=cosmology.sigma8,
             seed=seed,
         )
         with open(ic_dir / "2LPT.param", "w") as f:
             f.write(twolpt_params)
 
-        pk, params = run_camb(Omega_b=Ob, Omega_cdm=Om - Ob, h=h, ns=ns)
+        pk, params = run_camb(
+            Omega_b=cosmology.Ob,
+            Omega_cdm=cosmology.Om - cosmology.Ob,
+            h=cosmology.h,
+            ns=cosmology.ns,
+        )
         with open(ic_dir / "CAMB.params", "w") as f:
             f.write(str(params))
         np.savetxt(ic_dir / "Pk_m_z=0.000.txt", pk)

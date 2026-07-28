@@ -229,7 +229,7 @@ conditions code.
       must be such.
 - [ ] Generate tables with values from a latin hypercube or sobol sequence
 - [ ] Initial conditions mode to simply link to a specific file(s) for ICs
-- [ ] Define a cosmology class to use
+- [x] Define a cosmology class to use
 - [ ] Custom modules
   - [ ] Differing modules for ICs vs simulation
   - [x] Move modules code out of gadget
