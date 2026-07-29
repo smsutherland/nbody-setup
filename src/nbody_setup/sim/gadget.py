@@ -10,7 +10,7 @@ from nbody_setup.sim.sim_class import Simulator
 
 
 class Gadget(Simulator):
-    supported_ic_formats = [IcFormat.Gadget1]
+    supported_ic_formats: T.ClassVar[list[IcFormat]] = [IcFormat.Gadget1]
 
     gadget: Path
 
@@ -50,8 +50,7 @@ class Gadget(Simulator):
             f.write(gadget_params)
         with open(target / "output_list.txt", "w") as f:
             f.write("# Scale Factor\n")
-            for t in _output_times:
-                f.write(str(t) + "\n")
+            f.writelines(str(t) + "\n" for t in _output_times)
 
         match ic_format:
             case IcFormat.Gadget1:

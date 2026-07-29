@@ -203,9 +203,8 @@ def setup_run(
     print(f"    N    = {N} (total = {N * N * N})")
     print(f"    L    = {boxsize} kpc/h")
     print(f"    seed = {seed}")
-    if not skip_confirmation:
-        if not confirm():
-            return 1
+    if not skip_confirmation and not confirm():
+        return 1
 
     create_run(
         target,
@@ -238,7 +237,7 @@ def ensemble(
         "boxsize": 25.0,
         "N": 256,
     }
-    for k in parameter_table.keys():
+    for k in parameter_table:
         if k not in defaults:
             print("Warning: unrecognized column:", k, file=sys.stderr)
 
@@ -288,9 +287,8 @@ def ensemble(
             s += " " + post
         print(s)
 
-    if not skip_confirmation:
-        if not confirm():
-            return 1
+    if not skip_confirmation and not confirm():
+        return 1
 
     for i, row in enumerate(tqdm(parameter_table)):
         target = basename.with_name(basename.name + f"_{i}")

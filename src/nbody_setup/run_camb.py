@@ -5,19 +5,19 @@ import numpy as np
 
 
 @T.overload
-def run_camb(params: camb.CAMBparams) -> T.Tuple[np.ndarray, camb.CAMBparams]: ...
+def run_camb(params: camb.CAMBparams) -> tuple[np.ndarray, camb.CAMBparams]: ...
 @T.overload
 def run_camb(
     *, Omega_b: float, Omega_cdm: float, h: float, ns: float
-) -> T.Tuple[np.ndarray, camb.CAMBparams]: ...
+) -> tuple[np.ndarray, camb.CAMBparams]: ...
 def run_camb(
-    params: T.Optional[camb.CAMBparams] = None,
+    params: camb.CAMBparams | None = None,
     *,
     Omega_b: float = 0,
     Omega_cdm: float = 0,
     h: float = 0,
     ns: float = 0,
-) -> T.Tuple[np.ndarray, camb.CAMBparams]:
+) -> tuple[np.ndarray, camb.CAMBparams]:
     if params is None:
         params = camb.CAMBparams()
         # set accuracy of the calculation
@@ -58,7 +58,7 @@ def run_camb(
 
     # compute results
     results: camb.CAMBdata = camb.get_results(params)
-    k, zs, Pkmm = results.get_matter_power_spectrum(
+    k, _zs, Pkmm = results.get_matter_power_spectrum(
         minkh=2e-5,
         maxkh=200,
         npoints=400,

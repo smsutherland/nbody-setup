@@ -1,3 +1,4 @@
+import typing as T
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -7,7 +8,7 @@ from nbody_setup.cosmology import Cosmology
 
 
 class Simulator:
-    supported_ic_formats: list[IcFormat]
+    supported_ic_formats: T.ClassVar[list[IcFormat]]
 
     @classmethod
     @abstractmethod

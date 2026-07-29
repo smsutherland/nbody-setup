@@ -1,8 +1,8 @@
-from nbody_setup.conversion import IcFormat
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 
 
