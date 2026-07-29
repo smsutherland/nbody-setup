@@ -40,8 +40,12 @@ class InitialConditions:
         """
         Prepare a directory to have the initial conditions code run. The code
         itself should **not** be run here. `ic_dir` is a path to the directory
-        where initial conditions should be made. All other parameters specify
-        the cosmology and other parameters which may be necessary for generating
+        where initial conditions should be made. `target_formats` gives a list
+        of file formats supported by the selected simulator. The IC code is
+        *not* required to ouput an ic file in one of the formats given. However,
+        if the IC code is capable of doing so, it ought to. The format which the
+        IC code produced should be returned. All other parameters specify the
+        cosmology and other parameters which may be necessary for generating
         initial conditions. Here you can prepare power spectra and create
         parameter files for the initial conditions code to use. The only
         requirements are:

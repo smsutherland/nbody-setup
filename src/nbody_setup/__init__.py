@@ -148,10 +148,24 @@ def main() -> int:
         "convert",
         help="Convert between different initial condition formats",
     )
-    convert_parser.add_argument("input_format", type=IcFormat)
-    convert_parser.add_argument("input_name", type=Path)
-    convert_parser.add_argument("output_format", type=IcFormat)
-    convert_parser.add_argument("output_name", type=Path)
+    convert_parser.add_argument(
+        "input_format",
+        type=IcFormat,
+        choices=[x.value for x in IcFormat],
+        help="Format the ICs are currently in",
+    )
+    convert_parser.add_argument("input_name", type=Path, help="Path to ICs")
+    convert_parser.add_argument(
+        "output_format",
+        type=IcFormat,
+        choices=[x.value for x in IcFormat],
+        help="Format you want the ICs to be changed to",
+    )
+    convert_parser.add_argument(
+        "output_name",
+        type=Path,
+        help="Path to put converted ICs at",
+    )
     convert_parser.set_defaults(
         func=lambda args: args.input_format.convert_to(
             args.output_format,

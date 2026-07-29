@@ -19,6 +19,7 @@ on how to use `nbody-setup`.
     * [New](#new)
     * [Ensemble](#ensemble)
     * [Generate Table](#generate-table)
+    * [Convert](#convert)
   * [Adding New Codes](#adding-new-codes)
 
 ### Installation
@@ -181,6 +182,15 @@ accepts no command-line options.
 Om      Ob      sigma8  ns      h       seed    boxsize N
 ```
 
+#### Convert
+```bash
+nbody-setup convert [-h] input_format input_name output_format output_name
+```
+
+The convert command is, as the name implies, for converting between different
+initial condition formats. It is primarily for internal use by `nbody-setup`,
+but can be used in other contexts as well.
+
 ### Adding new codes
 `nbody-setup` is meant to be as agnostic as possible to the actual codes running
 the simulation. Currently, the initial condition generating code and the
@@ -198,9 +208,9 @@ Similarly, new simulation codes can be added in src/nbody_setup/sim/ with a
 class inheriting from `nbody_setup.sim.sim_class.Simulator`. Add your new class
 to `src.nbody_setup.initial_conditions.ic_options`.
 
-Currently, `nbody-setup` does not make any guarantees about compatibility
-between different initial condition and simulation codes. However, this feature
-is planned.
+To the best of my ability, `nbody-setup` will provide appropriate conversions
+between supported initial condition formats. This feature is still rather
+experimental. Bugs may occur and should be reported.
 
 ### A note on modules
 On systems that use TACC's
@@ -214,7 +224,7 @@ conditions code.
 ### To-Dos
 - [x] Generic over IC code
 - [x] Generic over simulation code
-  - [ ] Glue between different IC formats
+  - [x] Glue between different IC formats
 - [ ] Configurable output times
   - [ ] Output in a format accepted by the generic simulation code
 - [ ] Support for MonofonIC ICs
