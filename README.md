@@ -206,7 +206,7 @@ be the class itself, **not an instance of the class**.
 
 Similarly, new simulation codes can be added in src/nbody_setup/sim/ with a
 class inheriting from `nbody_setup.sim.sim_class.Simulator`. Add your new class
-to `src.nbody_setup.initial_conditions.ic_options`.
+to `src.nbody_setup.sim.sim_options`.
 
 To the best of my ability, `nbody-setup` will provide appropriate conversions
 between supported initial condition formats. This feature is still rather
