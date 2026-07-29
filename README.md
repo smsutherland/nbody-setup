@@ -157,7 +157,7 @@ Table is a path to the parameter table.
 values). `--engine`, if set, will prepare an execution engine to run all the
 generated simulations. `--engine=none` will forgo the preparation of such an
 engine. `--engine=array` prepares a slurm job array to run the simulations,
-submittable from the generated job.sh script. Double check all slurm parameters
+submit-able from the generated job.sh script. Double check all slurm parameters
 present in job.sh, and change/add parameters as necessary.
 
 #### Generate Table
@@ -194,7 +194,7 @@ but can be used in other contexts as well.
 ### Adding new codes
 `nbody-setup` is meant to be as agnostic as possible to the actual codes running
 the simulation. Currently, the initial condition generating code and the
-simulating code can be varried independently.
+simulating code can be varied independently.
 
 New initial conditions codes can be added in
 src/nbody_setup/initial_conditions/ by creating a new class inheriting from
