@@ -1,13 +1,17 @@
 import os
 import shutil
+import typing as T
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 from nbody_setup.sim.sim_class import Simulator
 
 
 class Gadget(Simulator):
+    supported_ic_formats = [IcFormat.Gadget1]
+
     gadget: Path
 
     @classmethod
@@ -37,6 +41,7 @@ class Gadget(Simulator):
         seed: int,
         boxsize: float,
         N: int,
+        ic_format: IcFormat,
     ):
         gadget_params = _gadget_file.format(
             Om=cosmology.Om, Ol=1 - cosmology.Om, h=cosmology.h, boxsize=boxsize
@@ -48,7 +53,14 @@ class Gadget(Simulator):
             for t in _output_times:
                 f.write(str(t) + "\n")
 
+        match ic_format:
+            case IcFormat.Gadget1:
+                ic_format_int = 1
+            case never:
+                T.assert_never(never)
+
         jobscript = _run_file.format(
+            ic_format=ic_format_int,
             last_snap=len(_output_times) - 1,
             gadget=self.gadget,
         )
@@ -56,14 +68,14 @@ class Gadget(Simulator):
             f.write(jobscript)
 
 
-_gadget_file = """InitCondFile              ./ICs/ics
+_gadget_file = """InitCondFile              ./ic
 OutputDir                 ./
 OutputListFilename        ./output_list.txt
 NumFilesPerSnapshot       1
 NumFilesWrittenInParallel 1
 CpuTimeBetRestartFile     10800.0
 TimeLimitCPU              10000000
-ICFormat                  1
+ICFormat                  {ic_format}
 SnapFormat                3
 TimeBegin                 0.0078125
 TimeMax                   1.00

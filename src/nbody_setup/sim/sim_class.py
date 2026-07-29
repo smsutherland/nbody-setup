@@ -2,9 +2,13 @@ from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 
+
 class Simulator:
+    supported_ic_formats: list[IcFormat]
+
     @classmethod
     @abstractmethod
     def args(cls, parser: ArgumentParser):
@@ -15,7 +19,6 @@ class Simulator:
         conflict with other simulation codes, as only the selected code will
         have its arguments added to the parser.
         """
-        ...
 
     @abstractmethod
     def __init__(self, args: Namespace):
@@ -23,7 +26,6 @@ class Simulator:
         Extract whatever command line options are needed to initialize the
         simulator class.
         """
-        ...
 
     @abstractmethod
     def setup(
@@ -33,6 +35,7 @@ class Simulator:
         seed: int,
         boxsize: float,
         N: int,
+        ic_format: IcFormat,
     ):
         """
         Prepare a directory to have the simulation code run. The code itself
@@ -53,4 +56,3 @@ class Simulator:
         The script should NOT:
         1. Load any modules.
         """
-        ...

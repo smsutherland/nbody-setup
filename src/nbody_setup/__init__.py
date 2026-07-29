@@ -7,6 +7,8 @@ import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
 
+from nbody_setup.conversion import IcFormat
+
 from .cosmology import Cosmology
 from .initial_conditions import ic_options
 from .initial_conditions.ic_class import InitialConditions
@@ -141,6 +143,22 @@ def main() -> int:
         usage="%(prog)s [-h] > table.txt",
     )
     generate_parser.set_defaults(func=lambda _: generate())
+
+    convert_parser = subparsers.add_parser(
+        "convert",
+        help="Convert between different initial condition formats",
+    )
+    convert_parser.add_argument("input_format", type=IcFormat)
+    convert_parser.add_argument("input_name", type=Path)
+    convert_parser.add_argument("output_format", type=IcFormat)
+    convert_parser.add_argument("output_name", type=Path)
+    convert_parser.set_defaults(
+        func=lambda args: args.input_format.convert_to(
+            args.output_format,
+            args.input_name,
+            args.output_name,
+        )
+    )
 
     args, _ = parser.parse_known_args()
     if args.command == "new":
@@ -364,21 +382,21 @@ def create_run(
     # Prepare ICs
     ic_dir = target / "ICs"
     ic_dir.mkdir(exist_ok=True)
-    ic.setup(
+    ic_format = ic.setup(
         ic_dir,
         cosmology,
         seed,
         boxsize,
         N,
+        simulator.supported_ic_formats,
     )
 
-    simulator.setup(
-        target,
-        cosmology,
-        seed,
-        boxsize,
-        N,
-    )
+    if ic_format in simulator.supported_ic_formats:
+        convert_to = ic_format
+    else:
+        convert_to = simulator.supported_ic_formats[0]
+
+    simulator.setup(target, cosmology, seed, boxsize, N, convert_to)
 
     if "LOADEDMODULES" in os.environ:
         modules = "module --force purge\n" + "".join(
@@ -392,6 +410,15 @@ def create_run(
         f.write(modules)
         f.write("pushd ICs\n")
         f.write("bash ./make_ic.sh >> ic.log 2>> ic.err\n")
+        # NOTE: We always convert regardless of whether ic_format == convert_to
+        # or not because conversion will link files to the proper location.
+        # The reason conversion has to do this is because the IC code puts its
+        # results in its own directory and we have to move them somehow.
+        # The ic code can't put ics in the simulation directory itself because
+        # the unconverted and converted ICs might have the same name
+        # ex. ic.hdf5 (gadget units) -> ic.hdf5 (swift units)
+        # If there's a cleaner way to do this, I don't see it.
+        f.write(f"{sys.argv[0]} convert {ic_format} ic {convert_to} ../ic\n")
         f.write("popd\n")
         f.write("bash ./run.sh >> sim.log 2>> sim.err\n")
 

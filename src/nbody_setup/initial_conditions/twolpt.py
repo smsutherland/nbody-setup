@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 from nbody_setup.initial_conditions.ic_class import InitialConditions
 from nbody_setup.run_camb import run_camb
@@ -51,7 +52,8 @@ class TwoLPT(InitialConditions):
         seed: int,
         boxsize: float,
         N: int,
-    ):
+        target_formats: list[IcFormat],
+    ) -> IcFormat:
 
         twolpt_params = _twolpt_file.format(
             Nmesh=N * 2,
@@ -80,6 +82,8 @@ class TwoLPT(InitialConditions):
 
         with open(ic_dir / "make_ic.sh", "w") as f:
             f.write(_ic_script.format(twolpt=self.twolpt_path))
+
+        return IcFormat.Gadget1
 
 
 _twolpt_file = """Nmesh                           {Nmesh}
@@ -121,6 +125,5 @@ _ic_script = """
 #!/bin/bash
 if [ ! -e ../ics.0 ]; then
     srun --ntasks=8 --cpus-per-task=1 {twolpt} 2LPT.param >> logIC
-    ln -s ic.{{0..7}} ../
 fi
 """

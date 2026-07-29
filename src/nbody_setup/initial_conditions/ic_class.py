@@ -1,3 +1,4 @@
+from nbody_setup.conversion import IcFormat
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -34,7 +35,8 @@ class InitialConditions:
         seed: int,
         boxsize: float,
         N: int,
-    ):
+        target_formats: list[IcFormat],
+    ) -> IcFormat:
         """
         Prepare a directory to have the initial conditions code run. The code
         itself should **not** be run here. `ic_dir` is a path to the directory
