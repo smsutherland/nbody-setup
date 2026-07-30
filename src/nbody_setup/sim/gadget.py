@@ -27,7 +27,7 @@ class Gadget(Simulator):
         )
 
     def __init__(self, args: Namespace):
-        self.gadget: Path = args.gadget.resolve()
+        self.gadget: Path = args.gadget.expanduser().resolve()
 
         if not self.gadget.exists():
             raise RuntimeError(f"{self.gadget} does not exist")

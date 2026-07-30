@@ -35,8 +35,8 @@ class TwoLPT(InitialConditions):
         )
 
     def __init__(self, args: Namespace):
-        self.twolpt_path: Path = getattr(args, "2lpt").resolve()
-        self.glass_file: Path = args.glass.resolve()
+        self.twolpt_path: Path = getattr(args, "2lpt").expanduser().resolve()
+        self.glass_file: Path = args.glass.expanduser().resolve()
 
         if not self.twolpt_path.exists():
             raise RuntimeError(f"{self.twolpt_path} does not exist")
