@@ -53,7 +53,7 @@ def main() -> int:
             args.target,
             Cosmology(args.Om, args.Ob, args.sigma8, args.ns, args.h),
             args.seed,
-            args.boxsize,
+            args.boxsize * 1000,  # convert to kpc
             args.N,
             args.no_confirm,
             simulator=sim_options[args.sim](args),
