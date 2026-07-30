@@ -43,8 +43,8 @@ pipx install 'git+https://github.com/smsutherland/nbody-setup'
 
 ### Usage
 
-`nbody-setup` currently has 3 subcommands: `new`, `ensemble`, and
-`generate-table`.
+`nbody-setup` currently has 4 subcommands: `new`, `ensemble`, `generate-table`,
+and `convert`.
 
 #### New
 ```bash
