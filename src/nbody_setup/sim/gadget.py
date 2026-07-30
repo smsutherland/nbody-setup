@@ -43,20 +43,96 @@ class Gadget(Simulator):
         N: int,
         ic_format: IcFormat,
     ):
-        gadget_params = _gadget_file.format(
-            Om=cosmology.Om, Ol=1 - cosmology.Om, h=cosmology.h, boxsize=boxsize
-        )
-        with open(target / "G3.param", "w") as f:
-            f.write(gadget_params)
-        with open(target / "output_list.txt", "w") as f:
-            f.write("# Scale Factor\n")
-            f.writelines(str(t) + "\n" for t in _output_times)
-
         match ic_format:
             case IcFormat.Gadget1:
                 ic_format_int = 1
             case never:
                 T.assert_never(never)
+
+        gadget_params = {
+            "InitCondFile": "./ic",
+            "OutputDir": "./",
+            "OutputListFilename": "./output_list.txt",
+            "NumFilesPerSnapshot": 1,
+            "NumFilesWrittenInParallel": 1,
+            "CpuTimeBetRestartFile": 10800.0,
+            "TimeLimitCPU": 10000000,
+            "ICFormat": ic_format_int,
+            "SnapFormat": 3,
+            "TimeBegin": 0.0078125,
+            "TimeMax": 1.00,
+            "Omega0": cosmology.Om,
+            "OmegaLambda": 1 - cosmology.Om,
+            "OmegaBaryon": 0.0,
+            "HubbleParam": cosmology.h,
+            "BoxSize": boxsize,
+            "SofteningGas": 0.0,
+            "SofteningHalo": 0.5,
+            "SofteningDisk": 0.0,
+            "SofteningBulge": 0.0,
+            "SofteningStars": 0.0,
+            "SofteningBndry": 0.0,
+            "SofteningGasMaxPhys": 0.0,
+            "SofteningHaloMaxPhys": 0.5,
+            "SofteningDiskMaxPhys": 0.0,
+            "SofteningBulgeMaxPhys": 0.0,
+            "SofteningStarsMaxPhys": 0.0,
+            "SofteningBndryMaxPhys": 0.0,
+            "PartAllocFactor": 2.5,
+            "MaxMemSize": 15500,
+            "BufferSize": 300,
+            "CoolingOn": 0,
+            "StarformationOn": 0,
+            "TypeOfTimestepCriterion": 0,
+            "ErrTolIntAccuracy": 0.025,
+            "MaxSizeTimestep": 0.005,
+            "MinSizeTimestep": 0.0,
+            "ErrTolTheta": 0.5,
+            "TypeOfOpeningCriterion": 1,
+            "ErrTolForceAcc": 0.005,
+            "TreeDomainUpdateFrequency": 0.01,
+            "DesNumNgb": 33,
+            "MaxNumNgbDeviation": 2,
+            "ArtBulkViscConst": 1.0,
+            "InitGasTemp": 273.0,
+            "MinGasTemp": 10.0,
+            "CourantFac": 0.15,
+            "ComovingIntegrationOn": 1,
+            "PeriodicBoundariesOn": 1,
+            "MinGasHsmlFractional": 0.1,
+            "OutputListOn": 1,
+            "TimeBetSnapshot": 1.0,
+            "TimeOfFirstSnapshot": 1.0,
+            "TimeBetStatistics": 0.5,
+            "MaxRMSDisplacementFac": 0.25,
+            "EnergyFile": "energy.txt",
+            "InfoFile": "info.txt",
+            "TimingsFile": "timings.txt",
+            "CpuFile": "cpu.txt",
+            "TimebinFile": "Timebin.txt",
+            "SnapshotFileBase": "snap",
+            "RestartFile": "restart",
+            "ResubmitOn": 0,
+            "ResubmitCommand": "/dev/null",
+            "UnitLength_in_cm": 3.085678e21,
+            "UnitMass_in_g": 1.989e43,
+            "UnitVelocity_in_cm_per_s": 1e5,
+            "GravityConstantInternal": 0,
+        }
+
+        max_key_len = max(len(k) for k in gadget_params)
+        with open(target / "G3.param", "w") as f:
+            for k, v in gadget_params.items():
+                f.write(k.ljust(max_key_len + 2))
+                if isinstance(v, str):
+                    f.write(v)
+                else:
+                    f.write(str(v))
+                f.write("\n")
+
+        with open(target / "output_list.txt", "w") as f:
+            f.write("# Scale Factor\n")
+            f.writelines(str(t) + "\n" for t in _output_times)
 
         jobscript = _run_file.format(
             ic_format=ic_format_int,
@@ -66,81 +142,6 @@ class Gadget(Simulator):
         with open(target / "run.sh", "w") as f:
             f.write(jobscript)
 
-
-_gadget_file = """InitCondFile              ./ic
-OutputDir                 ./
-OutputListFilename        ./output_list.txt
-NumFilesPerSnapshot       1
-NumFilesWrittenInParallel 1
-CpuTimeBetRestartFile     10800.0
-TimeLimitCPU              10000000
-ICFormat                  {ic_format}
-SnapFormat                3
-TimeBegin                 0.0078125
-TimeMax                   1.00
-Omega0                    {Om:.6f}
-OmegaLambda               {Ol:.6f}
-OmegaBaryon               0.0000
-HubbleParam               {h:.6f}
-BoxSize                   {boxsize}
-
-SofteningGas              0.0
-SofteningHalo             0.5
-SofteningDisk             0.0
-SofteningBulge            0.0
-SofteningStars            0.0
-SofteningBndry            0.0
-SofteningGasMaxPhys       0.0
-SofteningHaloMaxPhys      0.5
-SofteningDiskMaxPhys      0.0
-SofteningBulgeMaxPhys     0.0
-SofteningStarsMaxPhys     0.0
-SofteningBndryMaxPhys     0.0
-
-PartAllocFactor           2.5
-MaxMemSize                15500
-BufferSize                300
-CoolingOn                 0
-StarformationOn           0
-
-TypeOfTimestepCriterion   0
-ErrTolIntAccuracy         0.025
-MaxSizeTimestep           0.005
-MinSizeTimestep           0.0
-
-ErrTolTheta               0.5
-TypeOfOpeningCriterion    1
-ErrTolForceAcc            0.005
-TreeDomainUpdateFrequency 0.01
-
-DesNumNgb                 33
-MaxNumNgbDeviation        2
-ArtBulkViscConst          1.0
-InitGasTemp               273.0
-MinGasTemp                10.0
-CourantFac                0.15
-ComovingIntegrationOn     1
-PeriodicBoundariesOn      1
-MinGasHsmlFractional      0.1
-OutputListOn              1
-TimeBetSnapshot           1.
-TimeOfFirstSnapshot       1.
-TimeBetStatistics         0.5
-MaxRMSDisplacementFac     0.25
-EnergyFile                energy.txt
-InfoFile                  info.txt
-TimingsFile               timings.txt
-CpuFile                   cpu.txt
-TimebinFile               Timebin.txt
-SnapshotFileBase          snap
-RestartFile               restart
-ResubmitOn                0
-ResubmitCommand           /dev/null
-UnitLength_in_cm          3.085678e21
-UnitMass_in_g             1.989e43
-UnitVelocity_in_cm_per_s  1e5
-GravityConstantInternal   0
-"""
 
 # fmt: off
 _output_times = [
