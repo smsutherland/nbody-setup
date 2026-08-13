@@ -401,6 +401,7 @@ def create_run(
         boxsize,
         N,
         simulator.supported_ic_formats,
+        ic.mpi_mode.srun_command(),
     )
 
     if ic_format in simulator.supported_ic_formats:
@@ -408,7 +409,15 @@ def create_run(
     else:
         convert_to = simulator.supported_ic_formats[0]
 
-    simulator.setup(target, cosmology, seed, boxsize, N, convert_to)
+    simulator.setup(
+        target,
+        cosmology,
+        seed,
+        boxsize,
+        N,
+        convert_to,
+        simulator.mpi_mode.srun_command(),
+    )
 
     if "LOADEDMODULES" in os.environ:
         modules = "module --force purge\n" + "".join(

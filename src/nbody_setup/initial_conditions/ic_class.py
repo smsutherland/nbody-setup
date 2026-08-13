@@ -1,12 +1,16 @@
+import typing as T
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
+from nbody_setup.sim.sim_class import MpiMode
 
 
 class InitialConditions:
+    mpi_mode: T.ClassVar[MpiMode]
+
     @classmethod
     @abstractmethod
     def args(cls, parser: ArgumentParser):
@@ -36,6 +40,7 @@ class InitialConditions:
         boxsize: float,
         N: int,
         target_formats: list[IcFormat],
+        invocation_command: str,
     ) -> IcFormat:
         """
         Prepare a directory to have the initial conditions code run. The code

@@ -1,16 +1,49 @@
 import typing as T
 from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
+from enum import Enum, auto
 from pathlib import Path
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 
 
+class MpiMode(Enum):
+    NoMpi = auto()
+    PerCore = auto()
+    PerSocket = auto()
+    PerNode = auto()
+
+    def mpi_command(self) -> str:
+        match self:
+            case MpiMode.NoMpi:
+                return ""
+            case MpiMode.PerCore:
+                return "mpirun"
+            case MpiMode.PerSocket:
+                return "mpirun --npersocket 1"
+            case MpiMode.PerNode:
+                return "mpirun --npernode 1"
+
+    def srun_command(self) -> str:
+        match self:
+            case MpiMode.NoMpi:
+                return ""
+            case MpiMode.PerCore:
+                return "srun --cpus-per-task=1 --cpu-bind=cores --kill-on-bad-exit=1"
+            case MpiMode.PerSocket:
+                return (
+                    "srun --ntasks-per-socket=1 --cpu-bind=sockets --kill-on-bad-exit=1"
+                )
+            case MpiMode.PerNode:
+                return "srun --ntasks-per-node=1 --cpu-bind=cores --kill-on-bad-exit=1"
+
+
 class Simulator:
     """IC formats which this simulator can natively accept."""
 
     supported_ic_formats: T.ClassVar[list[IcFormat]]
+    mpi_mode: T.ClassVar[MpiMode]
 
     @classmethod
     @abstractmethod
@@ -39,6 +72,7 @@ class Simulator:
         boxsize: float,
         N: int,
         ic_format: IcFormat,
+        invocation_command: str,
     ):
         """
         Prepare a directory to have the simulation code run. The code itself

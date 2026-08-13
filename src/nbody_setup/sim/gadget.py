@@ -6,11 +6,12 @@ from pathlib import Path
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.sim.sim_class import Simulator
+from nbody_setup.sim.sim_class import MpiMode, Simulator
 
 
 class Gadget(Simulator):
     supported_ic_formats: T.ClassVar[list[IcFormat]] = [IcFormat.Gadget1]
+    mpi_mode: T.ClassVar[MpiMode] = MpiMode.PerCore
 
     gadget: Path
 
@@ -42,6 +43,7 @@ class Gadget(Simulator):
         boxsize: float,
         N: int,
         ic_format: IcFormat,
+        invocation_command: str,
     ):
         match ic_format:
             case IcFormat.Gadget1:
@@ -138,6 +140,7 @@ class Gadget(Simulator):
             ic_format=ic_format_int,
             last_snap=len(_output_times) - 1,
             gadget=self.gadget,
+            invocation=invocation_command,
         )
         with open(target / "run.sh", "w") as f:
             f.write(jobscript)
@@ -187,6 +190,6 @@ if [ ! -e snap_{last_snap:03d}.hdf5 ]; then
         restart=1
     fi
 
-    srun --ntasks=$SLURM_CPUS_ON_NODE --cpus-per-task=1 --cpu_bind=cores --kill-on-bad-exit=1 {gadget} G3.param $restart >> gadget.log 2>> gadget.err
+    {invocation} {gadget} G3.param $restart >> gadget.log 2>> gadget.err
 fi
 """

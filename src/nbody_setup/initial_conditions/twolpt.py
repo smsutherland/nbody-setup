@@ -9,9 +9,12 @@ from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
 from nbody_setup.initial_conditions.ic_class import InitialConditions
 from nbody_setup.run_camb import run_camb
+from nbody_setup.sim.sim_class import MpiMode
 
 
 class TwoLPT(InitialConditions):
+    mpi_mode = MpiMode.PerCore
+
     twolpt_path: Path
     glass_file: Path
 
@@ -53,8 +56,8 @@ class TwoLPT(InitialConditions):
         boxsize: float,
         N: int,
         target_formats: list[IcFormat],
+        invocation_command: str,
     ) -> IcFormat:
-
         twolpt_params = {
             "Nsample": N,
             "Box": boxsize,
@@ -108,7 +111,12 @@ class TwoLPT(InitialConditions):
         np.savetxt(ic_dir / "Pk_m_z=0.000.txt", pk)
 
         with open(ic_dir / "make_ic.sh", "w") as f:
-            f.write(_ic_script.format(twolpt=self.twolpt_path))
+            f.write(
+                _ic_script.format(
+                    invocation=invocation_command,
+                    twolpt=self.twolpt_path,
+                )
+            )
 
         return IcFormat.Gadget1
 
@@ -151,6 +159,6 @@ WDM_PartMass_in_kev             10.0
 _ic_script = """
 #!/bin/bash
 if [ ! -e ../ics.0 ]; then
-    srun --ntasks=8 --cpus-per-task=1 {twolpt} 2LPT.param >> logIC
+    {invocation} {twolpt} 2LPT.param >> logIC
 fi
 """
