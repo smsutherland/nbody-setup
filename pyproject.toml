@@ -1,7 +1,7 @@
 [project]
 name = "nbody-setup"
 version = "0.1.0"
-description = "Add your description here"
+description = "Prepare N-body simulations with ease!"
 readme = "README.md"
 authors = [{ name = "Sagan Sutherland", email = "sagan@farthinghalearms.com" }]
 requires-python = ">=3.11"
