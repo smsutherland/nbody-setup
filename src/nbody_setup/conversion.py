@@ -20,5 +20,5 @@ class IcFormat(StrEnum):
                             input_file.relative_to(output_name.parent),
                         )
                         i += 1
-            case _ as never:
-                T.assert_never(never)
+            case _:
+                T.assert_never()
