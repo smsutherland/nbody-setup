@@ -78,6 +78,7 @@ The following are options for `nbody-setup` itself:
 ```
 -h, --help        Display a help message and immediately exit
 -y, --no-confirm  Skip asking for confirmation before making a simulation
+--no-slurm            Force use of mpi commands instead of slurm commands
 --sim {gadget}    Path to a Gadget-III executable
 --ics {2lpt}      What initial condition code to use
 ```
@@ -147,6 +148,7 @@ Table is a path to the parameter table.
 ```
 -h, --help            Display a help message and immediately exit
 -y, --no-confirm      Skip asking for confirmation before making a simulation
+--no-slurm            Force use of mpi commands instead of slurm commands
 --sim {gadget}        What simulation code to use
 --ics {2lpt}          What initial condition code to use
 --engine {none,array} Which execution engine (if any) to prepare
@@ -230,7 +232,7 @@ conditions code.
 - [ ] Support for MonofonIC ICs
 - [ ] Support for SWIFT N-body runs
 - [ ] Support for disBatch engine
-- [ ] Don't use slurm commands if they're not present
+- [x] Don't use slurm commands if they're not present
 - [ ] Migrate this todo list to github issues
 - [ ] Proper and complete help command
 - [ ] Make ensemble expand one-row columns to the whole set

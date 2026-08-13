@@ -1,3 +1,4 @@
+import shutil
 import argparse
 import os
 import sys
@@ -48,6 +49,11 @@ def main() -> int:
         action="store_true",
         help="Do not prompt for any confirmation",
     )
+    new_parser.add_argument(
+        "--no-slurm",
+        action="store_true",
+        help="Force the use of mpi commands instead of slurm commands",
+    )
     new_parser.set_defaults(
         func=lambda args: setup_run(
             args.target,
@@ -56,6 +62,7 @@ def main() -> int:
             args.boxsize * 1000,  # convert to kpc
             args.N,
             args.no_confirm,
+            args.no_slurm,
             simulator=sim_options[args.sim](args),
             ic=ic_options[args.ics](args),
         ),
@@ -106,6 +113,11 @@ def main() -> int:
         help="Do not prompt for any confirmation",
     )
     ensemble_parser.add_argument(
+        "--no-slurm",
+        action="store_true",
+        help="Force the use of mpi commands instead of slurm commands",
+    )
+    ensemble_parser.add_argument(
         "--engine",
         choices=["none", "disbatch", "array"],
         default="none",
@@ -123,6 +135,7 @@ def main() -> int:
             args.table,
             args.no_confirm,
             args.engine,
+            args.no_slurm,
             simulator=sim_options[args.sim](args),
             ic=ic_options[args.ics](args),
         ),
@@ -197,6 +210,7 @@ def setup_run(
     boxsize: float,
     N: int,
     skip_confirmation: bool,
+    no_slurm: bool,
     simulator: Simulator,
     ic: InitialConditions,
 ) -> int:
@@ -228,6 +242,7 @@ def setup_run(
         N,
         simulator,
         ic,
+        no_slurm,
     )
     return 0
 
@@ -236,6 +251,7 @@ def ensemble(
     basename: Path,
     table: Path,
     skip_confirmation: bool,
+    no_slurm: bool,
     engine: str,
     simulator: Simulator,
     ic: InitialConditions,
@@ -320,6 +336,7 @@ def ensemble(
             row["N"],
             simulator,
             ic,
+            no_slurm,
         )
 
     if engine == "disbatch":
@@ -388,8 +405,11 @@ def create_run(
     N: int,
     simulator: Simulator,
     ic: InitialConditions,
+    no_slurm: bool,
 ):
     target.mkdir(parents=True, exist_ok=True)
+
+    use_slurm = (shutil.which("srun") is not None) and not no_slurm
 
     # Prepare ICs
     ic_dir = target / "ICs"
@@ -401,7 +421,7 @@ def create_run(
         boxsize,
         N,
         simulator.supported_ic_formats,
-        ic.mpi_mode.srun_command(),
+        ic.mpi_mode.srun_command() if use_slurm else ic.mpi_mode.mpi_command(),
     )
 
     if ic_format in simulator.supported_ic_formats:
@@ -416,7 +436,9 @@ def create_run(
         boxsize,
         N,
         convert_to,
-        simulator.mpi_mode.srun_command(),
+        simulator.mpi_mode.srun_command()
+        if use_slurm
+        else simulator.mpi_mode.mpi_command(),
     )
 
     if "LOADEDMODULES" in os.environ:
