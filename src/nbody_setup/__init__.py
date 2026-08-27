@@ -11,10 +11,8 @@ from tqdm import tqdm
 from nbody_setup.conversion import IcFormat
 
 from .cosmology import Cosmology
-from .initial_conditions import ic_options
-from .initial_conditions.ic_class import InitialConditions
-from .sim import sim_options
-from .sim.sim_class import Simulator
+from .initial_conditions import InitialConditions, ic_options
+from .sim import Simulator, sim_options
 
 
 def main() -> int:

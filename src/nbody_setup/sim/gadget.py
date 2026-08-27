@@ -6,10 +6,10 @@ from pathlib import Path
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.sim.sim_class import MpiMode, Simulator
+from nbody_setup.sim import MpiMode
 
 
-class Gadget(Simulator):
+class Gadget:
     supported_ic_formats: T.ClassVar[list[IcFormat]] = [IcFormat.Gadget1]
     mpi_mode: T.ClassVar[MpiMode] = MpiMode.PerCore
 

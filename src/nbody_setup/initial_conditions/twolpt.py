@@ -1,5 +1,6 @@
 import os
 import shutil
+import typing as T
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
@@ -7,13 +8,12 @@ import numpy as np
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.initial_conditions.ic_class import InitialConditions
 from nbody_setup.run_camb import run_camb
-from nbody_setup.sim.sim_class import MpiMode
+from nbody_setup.sim import MpiMode
 
 
-class TwoLPT(InitialConditions):
-    mpi_mode = MpiMode.PerCore
+class TwoLPT:
+    mpi_mode: T.ClassVar[MpiMode] = MpiMode.PerCore
 
     twolpt_path: Path
     glass_file: Path
