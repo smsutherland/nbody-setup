@@ -6,7 +6,7 @@ from pathlib import Path
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.sim import MpiMode
+from nbody_setup.mpi import MpiMode
 
 
 class Gadget:

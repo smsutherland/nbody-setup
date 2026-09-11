@@ -8,8 +8,8 @@ import numpy as np
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
+from nbody_setup.mpi import MpiMode
 from nbody_setup.run_camb import run_camb
-from nbody_setup.sim import MpiMode
 
 
 class TwoLPT:
