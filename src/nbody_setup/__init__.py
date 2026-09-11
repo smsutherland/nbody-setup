@@ -285,7 +285,7 @@ def ensemble(
     )
     if basename.parent.exists() and next(basename.parent.iterdir(), None) is not None:
         print("    This directory exists and is not empty!")
-    print("The run will have the following parameters")
+    print("The runs will have the following parameters")
     parameters = [
         ("Om", "Ω_m", ""),
         ("Ob", "Ω_b", "(for initial power spectrum)"),
