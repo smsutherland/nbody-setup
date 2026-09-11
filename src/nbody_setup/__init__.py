@@ -265,7 +265,7 @@ def ensemble(
         "boxsize": 25.0,
         "N": 256,
     }
-    for k in parameter_table:
+    for k in parameter_table.colnames:
         if k not in defaults:
             print("Warning: unrecognized column:", k, file=sys.stderr)
 
