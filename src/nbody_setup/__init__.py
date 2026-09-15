@@ -1,3 +1,4 @@
+import pydoe
 import argparse
 import os
 import shutil
@@ -153,7 +154,45 @@ def main() -> int:
         "Any column may be safely removed. A suitable default value will be used instead.",
         usage="%(prog)s [-h] > table.txt",
     )
-    generate_parser.set_defaults(func=lambda _: generate())
+    generate_parser.add_argument(
+        "kind",
+        help="How should we generate a table?",
+        choices=["empty", "lh", "sobol"],
+        default="empty",
+        nargs="?",
+    )
+    generate_parser.add_argument(
+        "table",
+        help="parameter table with which to create a fuller table. '-' for stdin",
+        default="-",
+        nargs="?",
+    )
+    generate_parser.add_argument(
+        "-n",
+        "--number",
+        help="How many rows to generate",
+        type=int,
+        default=0,
+    )
+    generate_parser.add_argument(
+        "-s",
+        "--random-seed",
+        help="Random seed for generating table with",
+        type=int,
+        default=0,
+    )
+    generate_parser.add_argument(
+        "-p",
+        "--precision",
+        help="decimal precision with which to print numbers",
+        type=int,
+        default=None,
+    )
+    generate_parser.set_defaults(
+        func=lambda args: generate(
+            args.kind, args.number, args.table, args.random_seed, args.precision
+        )
+    )
 
     convert_parser = subparsers.add_parser(
         "convert",
@@ -373,7 +412,11 @@ bash job.sh
     return 0
 
 
-def generate() -> int:
+def generate(
+    kind: str, number: int, parameters: str, seed: int, precision: int | None
+) -> int:
+
+    # print header
     print("# This is all the columns suppored by nbody-setup ensemble.")
     print("# Columns may be safely removed.")
     print("# Removed columns will be replaced by a suitable default for all runs.")
@@ -389,9 +432,75 @@ def generate() -> int:
     print(
         "# N       | int   | cube root of the number of particles. Must be a multiple of 64"
     )
-    items = ["Om", "Ob", "sigma8", "ns", "h", "seed", "boxsize", "N"]
-    maxwidth = max(len(i) for i in items)
-    print(" ".join("{i:<{width}}".format(i=i, width=maxwidth) for i in items).strip())
+
+    if kind == "empty":
+        items = ["Om", "Ob", "sigma8", "ns", "h", "seed", "boxsize", "N"]
+        maxwidth = max(len(i) for i in items)
+        print(
+            " ".join("{i:<{width}}".format(i=i, width=maxwidth) for i in items).strip()
+        )
+        return 0
+
+    if parameters == "-":
+        lines = sys.stdin.readlines()
+        table = Table.read(
+            lines,
+            names=["parameter", "low", "high", "logflag"],
+            format="ascii.fast_no_header",
+            delimiter=",",
+            guess=False,
+        )
+    else:
+        table = Table.read(
+            parameters,
+            names=["parameter", "low", "high", "logflag"],
+            format="ascii.fast_no_header",
+            delimiter=",",
+            guess=False,
+        )
+
+    parameter_names = ["Om", "Ob", "sigma8", "ns", "h"]
+    bad_parameters = [p for p in table["parameter"] if p not in parameter_names]
+    if bad_parameters:
+        print("Unknown parameters:", ", ".join(bad_parameters), file=sys.stderr)
+        return 1
+
+    if kind == "lh":
+        unscaled = pydoe.lhs(len(table), number, criterion="maximin", seed=seed)
+        new_table = Table(unscaled, names=table["parameter"])
+    elif kind == "sobol":
+        if number.bit_count() != 1:
+            print(
+                "Sobol' Sequences have to be made with a power-of-2 number of points.",
+                file=sys.stderr,
+            )
+            return 1
+        unscaled = pydoe.sobol_sequence(number, len(table), seed=seed, scramble=True)
+        new_table = Table(unscaled, names=table["parameter"])
+
+    for row in table:
+        col = new_table[row["parameter"]]
+        if row["logflag"]:
+            low = np.log(row["low"])
+            high = np.log(row["high"])
+            col *= high - low
+            col += low
+            col[:] = np.exp(col[:])
+        else:
+            low = row["low"]
+            high = row["high"]
+            col *= high - low
+            col += low
+
+    new_table.write(
+        sys.stdout,
+        format="ascii.fixed_width",
+        bookend=False,
+        delimiter=None,
+        formats={}
+        if precision is None
+        else {p: f"%.{precision}g" for p in table["parameter"]},
+    )
     return 0
 
 

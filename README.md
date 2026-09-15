@@ -136,8 +136,8 @@ a default value for that parameter. Default values are as follows:
 | boxsize | 25            |
 | N       | 256           |
 
-Note for CAMELS users: the table used is similar in concept to, but distinct from,
-the cosmo-astro-seed tables we use.
+Note for CAMELS users: the table used is similar in concept to, but distinct
+from, the cosmo-astro-seed tables we use.
 
 `ensemble` requires two positional options: basename and table.
 Basename gives the base name for prepared simulations.
@@ -167,8 +167,7 @@ present in job.sh, and change/add parameters as necessary.
 
 `generate-table` prepares a table will all columns present, ready to be filled
 in for [ensemble](#ensemble). The table is printed to standard out, so
-redirecting it to the desired file is recommended. Currently, `generate-table`
-accepts no command-line options.
+redirecting it to the desired file is recommended. 
 ```
 # This is all the columns suppored by nbody-setup ensemble.
 # Columns may be safely removed.
@@ -189,6 +188,49 @@ Om      Ob      sigma8  ns      h       seed    boxsize N
 nbody-setup convert [-h] input_format input_name output_format output_name
 ```
 
+`generate-table` can also pre-fill the table with values generated from a Sobol'
+Sequence or a Latin Hypercube. Doing so accepts the following arguments:
+```
+kind               How to generate the table. Can be 'lh' or 'sobol'.
+table              Parameter specification table to generate from.
+-n, --number       How many rows to generate
+-s, --random-seed  Random seed for generation functions
+-p, --precision    Precision to print table values with
+```
+
+The `table` parameter points to a parameter specification table. If not
+provided, or is equal to "-", this table will be read from stdin. The parameter
+specification table should a csv file with one row per parameter varied. The
+rows should be of the form
+```
+parameter_name,low_value,high_value,log_flag
+```
+`parameter_name` should be one of `Om`, `Ob`, `sigma8`, `ns`, or `h`. Note that
+`seed`, `boxsize`, and `N` *cannot* be generated using these methods, and must
+be added manually. `low_value` and `high_value` are the limits between which
+values should be generated. If `log_flag` is 1, then then the resultant values
+will be evenly distributed in log-space, otherwise they will be evenly
+distributed in linear-space.
+
+For example:
+```bash
+$ cat parameters.csv
+Om,     0.1, 0.5, 0
+sigma8, 0.1, 10,  1
+$ nbody-setup generate-table sobol parameters.csv -n8 -s12 -p3
+# <header snipped>
+   Om  sigma8
+0.129   0.512
+0.367    2.38
+0.443   0.138
+0.254    9.17
+0.231   0.192
+0.467    4.12
+0.341   0.741
+0.155    1.11
+```
+
+#### Convert
 The convert command is, as the name implies, for converting between different
 initial condition formats. It is primarily for internal use by `nbody-setup`,
 but can be used in other contexts as well.
@@ -239,7 +281,7 @@ conditions code.
 - [ ] Generate shell completions
 - [ ] Don't assume glass files are 64x64x64. Either that or document that they
       must be such.
-- [ ] Generate tables with values from a latin hypercube or sobol sequence
+- [x] Generate tables with values from a latin hypercube or sobol sequence
 - [ ] Initial conditions mode to simply link to a specific file(s) for ICs
 - [x] Define a cosmology class to use
 - [ ] Custom modules

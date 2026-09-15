@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -86,6 +86,7 @@ dependencies = [
     { name = "camb" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pydoe" },
     { name = "tqdm" },
 ]
 
@@ -94,6 +95,7 @@ requires-dist = [
     { name = "astropy", specifier = ">=8.0.1" },
     { name = "camb", specifier = ">=1.6.4" },
     { name = "numpy", specifier = ">=2" },
+    { name = "pydoe", specifier = ">=1.5.0" },
     { name = "tqdm", specifier = ">=4.68.4" },
 ]
 
@@ -243,6 +245,21 @@ wheels = [
 ]
 
 [[package]]
+name = "pydoe"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/52/b0/ec2a0a8fc6430e2eeceac8ff5a3758b7d4dd3f04ae23485a9e56b0189193/pydoe-1.5.0.tar.gz", hash = "sha256:b1a90b8f1da9aa4f9a0202177a0d60e37451568027828c8b3772452da86a20cb", size = 1945418, upload-time = "2026-08-20T09:33:06.978Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/26/7d/ec480e4b71300a5b2fbae8426ef23bfc1309396fa4d48a00d31e464c02d7/pydoe-1.5.0-py3-none-any.whl", hash = "sha256:9326105ae47452b59a721a8a9159a89a58c30ac231edbc2b92745d6ecfd50f5b", size = 129219, upload-time = "2026-08-20T09:33:05.343Z" },
+]
+
+[[package]]
 name = "pyerfa"
 version = "2.0.1.5"
 source = { registry = "https://pypi.org/simple" }
@@ -324,7 +341,7 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7a/97/5a3609c4f8d58b039179648e62dd220f89864f56f7357f5d4f45c29eb2cc/scipy-1.17.1.tar.gz", hash = "sha256:95d8e012d8cb8816c226aef832200b1d45109ed4464303e997c5b13122b297c0", size = 30573822, upload-time = "2026-02-23T00:26:24.851Z" }
 wheels = [
@@ -398,7 +415,7 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a7/25/c2700dfaf6442b4effaa91af24ebce5dc9d31bb4a69706313aae70d72cd0/scipy-1.18.0.tar.gz", hash = "sha256:67b2ad2ad54c72ca6d04975a9b2df8c3638c34ddd5b28738e94fc2b57929d378", size = 30774447, upload-time = "2026-06-19T15:01:43.456Z" }
 wheels = [

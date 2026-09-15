@@ -5,7 +5,13 @@ description = "Prepare N-body simulations with ease!"
 readme = "README.md"
 authors = [{ name = "Sagan Sutherland", email = "sagan@farthinghalearms.com" }]
 requires-python = ">=3.11"
-dependencies = ["astropy>=8.0.1", "camb>=1.6.4", "numpy>=2", "tqdm>=4.68.4"]
+dependencies = [
+    "astropy>=8.0.1",
+    "camb>=1.6.4",
+    "numpy>=2",
+    "pydoe>=1.5.0",
+    "tqdm>=4.68.4",
+]
 
 [project.scripts]
 nbody-setup = "nbody_setup:main"
