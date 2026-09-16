@@ -1,4 +1,3 @@
-import pydoe
 import argparse
 import os
 import shutil
@@ -6,6 +5,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pydoe
 from astropy.table import Table
 from tqdm import tqdm
 
