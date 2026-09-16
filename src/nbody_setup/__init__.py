@@ -152,7 +152,7 @@ def main() -> int:
         help="Prepare a table of parameters for ensemble",
         description="Prepares a table to be consumed by ensemble.\n"
         "Any column may be safely removed. A suitable default value will be used instead.",
-        usage="%(prog)s [-h] > table.txt",
+        usage="%(prog)s [{empty,lh,sobol}] [-h] [-n NUMBER] [-s RANDOM_SEED] [-p PRECISION] [--cosmoseed COSMOSEED] [--boxsize L] [--N N] [table] > table.txt",
     )
     generate_parser.add_argument(
         "kind",
@@ -172,7 +172,7 @@ def main() -> int:
         "--number",
         help="How many rows to generate",
         type=int,
-        default=0,
+        default=1,
     )
     generate_parser.add_argument(
         "-s",
@@ -188,11 +188,42 @@ def main() -> int:
         type=int,
         default=None,
     )
-    generate_parser.set_defaults(
-        func=lambda args: generate(
-            args.kind, args.number, args.table, args.random_seed, args.precision
-        )
+    generate_parser.add_argument(
+        "--cosmoseed",
+        default=None,
+        help="Seed for initial conditions. End with '..' to make seed increment for each run.",
     )
+    generate_parser.add_argument(
+        "--boxsize",
+        type=float,
+        default=None,
+        help="Side length for the volume in Mpc/h",
+        metavar="L",
+    )
+    generate_parser.add_argument(
+        "--N",  # keeping this long for consistency with --h
+        type=int,
+        default=None,
+        help="Cube root of the number of particles in the volume.",
+    )
+
+    def inner_generate(args):
+        if args.number <= 0:
+            print("--number must be a positive integer\n", file=sys.stderr)
+            generate_parser.print_help()
+            return 1
+        generate(
+            args.kind,
+            args.number,
+            args.table,
+            args.random_seed,
+            args.precision,
+            args.cosmoseed,
+            args.boxsize,
+            args.N,
+        )
+
+    generate_parser.set_defaults(func=inner_generate)
 
     convert_parser = subparsers.add_parser(
         "convert",
@@ -413,7 +444,14 @@ bash job.sh
 
 
 def generate(
-    kind: str, number: int, parameters: str, seed: int, precision: int | None
+    kind: str,
+    number: int,
+    parameters: str,
+    seed: int,
+    precision: int | None,
+    cosmoseed: str | None,
+    boxsize: float | None,
+    N: int | None,
 ) -> int:
 
     # print header
@@ -491,6 +529,17 @@ def generate(
             high = row["high"]
             col *= high - low
             col += low
+
+    if cosmoseed is not None:
+        if cosmoseed.endswith(".."):
+            starting_seed = int(cosmoseed[:-2])
+            new_table["seed"] = np.arange(starting_seed, starting_seed + number)
+        else:
+            new_table["seed"] = int(cosmoseed)
+    if boxsize is not None:
+        new_table["boxsize"] = boxsize
+    if N is not None:
+        new_table["N"] = N
 
     new_table.write(
         sys.stdout,
