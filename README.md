@@ -179,7 +179,7 @@ redirecting it to the desired file is recommended.
 # h       | float | Reducede hubble constant H_0 / (100 km/s/Mpc)
 # seed    | int   | Random seed for initial conditions
 # boxsize | float | Box side length in Mpc/h
-# N       | int   | cube root of the number of particles
+# N       | int   | Cube root of the number of particles
 Om      Ob      sigma8  ns      h       seed    boxsize N
 ```
 
@@ -196,6 +196,9 @@ table              Parameter specification table to generate from.
 -n, --number       How many rows to generate
 -s, --random-seed  Random seed for generation functions
 -p, --precision    Precision to print table values with
+--cosmoseed        Random seed for initial conditions
+--boxsize          Box side length in Mpc/h
+--N                cube root of the number of particles
 ```
 
 The `table` parameter points to a parameter specification table. If not
@@ -205,12 +208,11 @@ rows should be of the form
 ```
 parameter_name,low_value,high_value,log_flag
 ```
-`parameter_name` should be one of `Om`, `Ob`, `sigma8`, `ns`, or `h`. Note that
-`seed`, `boxsize`, and `N` *cannot* be generated using these methods, and must
-be added manually. `low_value` and `high_value` are the limits between which
-values should be generated. If `log_flag` is 1, then then the resultant values
-will be evenly distributed in log-space, otherwise they will be evenly
-distributed in linear-space.
+`parameter_name` should be one of `Om`, `Ob`, `sigma8`, `ns`, or `h`.
+`low_value` and `high_value` are the limits between which values should be
+generated. If `log_flag` is 1, then then the resultant values will be evenly
+distributed in log-space, otherwise they will be evenly distributed in
+linear-space.
 
 For example:
 ```bash
@@ -228,6 +230,32 @@ $ nbody-setup generate-table sobol parameters.csv -n8 -s12 -p3
 0.467    4.12
 0.341   0.741
 0.155    1.11
+```
+
+The parameters `seed`, `boxsize`, and `N` cannot be varied in the Latin
+Hypercube or Sobol' Sequence. They can, however, be included in the table. The
+`--N`, `--boxsize`, and `--cosmoseed` (not to be confused with `--random-seed`
+which controls the table generation) can set these values to a single, fixed
+value. `--cosmoseed` in particular has the special behavior that if it ends with
+"..", the seed column will increment up by one for each row.
+
+For example:
+```bash
+$ cat parameters.csv
+Om,     0.1, 0.5, 0
+sigma8, 0.1, 10,  1
+$ nbody-setup generate-table sobol parameters.csv -n8 -s12 -p3 \
+    --cosmoseed=1000.. --N=256
+# <header snipped>
+   Om  sigma8  seed    N
+0.129   0.512  1000  256
+0.367    2.38  1001  256
+0.443   0.138  1002  256
+0.254    9.17  1003  256
+0.231   0.192  1004  256
+0.467    4.12  1005  256
+0.341   0.741  1006  256
+0.155    1.11  1007  256
 ```
 
 #### Convert
