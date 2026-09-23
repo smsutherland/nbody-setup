@@ -158,7 +158,7 @@ WDM_PartMass_in_kev             10.0
 
 _ic_script = """
 #!/bin/bash
-if [ ! -e ../ics.0 ]; then
+if [ ! -e ./ics.0 ]; then
     {invocation} {twolpt} 2LPT.param >> logIC
 fi
 """
