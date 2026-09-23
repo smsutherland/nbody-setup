@@ -59,6 +59,7 @@ class TwoLPT:
         invocation_command: str,
     ) -> IcFormat:
         twolpt_params = {
+            "Nmesh": N * 2,
             "Nsample": N,
             "Box": boxsize,
             "FileBase": "ic",
