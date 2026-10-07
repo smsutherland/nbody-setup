@@ -52,7 +52,7 @@ class Gadget:
                 T.assert_never(never)
 
         gadget_params = {
-            "InitCondFile": "./ic",
+            "InitCondFile": "./ics",
             "OutputDir": "./",
             "OutputListFilename": "./output_list.txt",
             "NumFilesPerSnapshot": 1,

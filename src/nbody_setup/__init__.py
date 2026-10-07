@@ -617,7 +617,7 @@ def create_run(
         # the unconverted and converted ICs might have the same name
         # ex. ic.hdf5 (gadget units) -> ic.hdf5 (swift units)
         # If there's a cleaner way to do this, I don't see it.
-        f.write(f"{sys.argv[0]} convert {ic_format} ic {convert_to} ../ic\n")
+        f.write(f"{sys.argv[0]} convert {ic_format} ics {convert_to} ../ics\n")
         f.write("popd\n")
         f.write("bash ./run.sh >> sim.log 2>> sim.err\n")
 

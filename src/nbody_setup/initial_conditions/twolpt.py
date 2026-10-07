@@ -62,7 +62,7 @@ class TwoLPT:
             "Nmesh": N * 2,
             "Nsample": N,
             "Box": boxsize,
-            "FileBase": "ic",
+            "FileBase": "ics",
             "OutputDir": "./",
             "GlassFile": self.glass_file,
             "GlassTileFac": N // 64,
