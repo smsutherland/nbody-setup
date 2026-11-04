@@ -84,14 +84,15 @@ def main() -> int:
         help="Prepare an ensemble of N-body runs",
     )
     ensemble_parser.add_argument(
-        "basename",
-        type=Path,
-        help="Base name for simulation directories. ex. LH -> LH_0, LH_1, …",
-    )
-    ensemble_parser.add_argument(
         "table",
         type=Path,
         help="Table with parameters for each simulation. See generate-table",
+    )
+    ensemble_parser.add_argument(
+        "basename",
+        type=Path,
+        help="Base name for simulation directories. ex. LH -> LH_0, LH_1, … If missing, simname must be present in table",
+        nargs="?",
     )
     ensemble_parser.add_argument(
         "--boxsize",
@@ -316,7 +317,7 @@ def setup_run(
 
 
 def ensemble(
-    basename: Path,
+    basename: Path | None,
     table: Path,
     skip_confirmation: bool,
     no_slurm: bool,
@@ -334,10 +335,18 @@ def ensemble(
         "seed": 12,
         "boxsize": 25.0,
         "N": 256,
+        "simname": "",
     }
     for k in parameter_table.colnames:
         if k not in defaults:
             print("Warning: unrecognized column:", k, file=sys.stderr)
+
+    if basename is None and "simname" not in parameter_table.colnames:
+        print(
+            "ERROR: basename not specified and simname not provided and table",
+            file=sys.stderr,
+        )
+        return 1
 
     for k, v in defaults.items():
         if k not in parameter_table.colnames:
@@ -350,11 +359,22 @@ def ensemble(
     # convert to kpc
     parameter_table["boxsize"] *= 1000
 
-    print(
-        f"This will create {len(parameter_table)} N-body run{'' if len(parameter_table) == 1 else 's'} in {basename.parent}"
-    )
-    if basename.parent.exists() and next(basename.parent.iterdir(), None) is not None:
-        print("    This directory exists and is not empty!")
+    if basename is not None:
+        print(
+            f"This will create {len(parameter_table)} N-body run{'' if len(parameter_table) == 1 else 's'} in {basename.parent}"
+        )
+        if (
+            basename.parent.exists()
+            and next(basename.parent.iterdir(), None) is not None
+        ):
+            print("    This directory exists and is not empty!")
+    else:
+        print(
+            f"This will create {len(parameter_table)} N-body run{'' if len(parameter_table) == 1 else 's'} in ."
+        )
+        if next(Path.cwd().iterdir(), None) is not None:
+            print("    This directory exists and is not empty!")
+
     print("The runs will have the following parameters")
     parameters = [
         ("Om", "Ω_m", ""),
@@ -389,7 +409,10 @@ def ensemble(
         return 1
 
     for i, row in enumerate(tqdm(parameter_table)):
-        target = basename.with_name(basename.name + f"_{i}")
+        if basename is not None:
+            target = basename.with_name(basename.name + f"_{i}")
+        else:
+            target = Path.cwd() / row["simname"]
         create_run(
             target,
             Cosmology(
@@ -416,7 +439,11 @@ def ensemble(
             f.write("#DISBATCH PREFIX cd \n")
             f.write("#DISBATCH SUFFIX ; bash job.sh &>> log\n")
             for i in range(len(parameter_table)):
-                target = basename.with_name(basename.name + f"_{i}").resolve()
+                # TODO: Do we want to try and put the simnames in the table so we're not duplicating this work?
+                if basename is not None:
+                    target = basename.with_name(basename.name + f"_{i}")
+                else:
+                    target = Path.cwd() / row["simname"]
                 f.write(str(target) + "\n")
         with open("job.sh", "w") as f:
             f.write("""#!/bin/bash
@@ -436,9 +463,16 @@ disBatch disbatch_tasks
 #SBATCH --cpus-per-task=1
 #SBATCH --array=0-{len(parameter_table) - 1}
 
-cd {basename}_${{SLURM_ARRAY_TASK_ID}}
-bash job.sh
 """)
+            if basename is not None:
+                f.write(f"cd \"{basename}_${{SLURM_ARRAY_TASK_ID}}\" || exit\n")
+            else:
+                f.write("names=(")
+                for s in parameter_table["simname"]:
+                    f.write(f"'{s}' ")
+                f.write(")\n")
+                f.write("cd \"${names[${SLURM_ARRAY_TASK_ID}]}\" || exit\n")
+            f.write("bash job.sh\n")
 
     return 0
 

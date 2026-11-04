@@ -107,7 +107,7 @@ to the behavior with `2LPTic`.
 
 #### Ensemble
 ```bash
-nbody-setup ensemble [options] basename table
+nbody-setup ensemble [options] table [basename]
 ```
 
 The ensemble command will create an ensemble of N-body simulations, each with
@@ -139,9 +139,13 @@ a default value for that parameter. Default values are as follows:
 Note for CAMELS users: the table used is similar in concept to, but distinct
 from, the cosmo-astro-seed tables we use.
 
-`ensemble` requires two positional options: basename and table.
+`ensemble` accepts two positional options: table and basename.
 Basename gives the base name for prepared simulations.
-For example, CV results in simulation directories named CV_0, CV_1, ...
+For example, CV results in simulation directories named CV\_0, CV\_1, ...
+If basename is omitted, then an extra column `simname` is required in the table.
+This column specifies the directory in which to put each simulation, and can be
+used to create a directory structure that isn't just X\_0, X\_1, ...
+If basename is given, then simname is ignored.
 Table is a path to the parameter table.
 
 `ensemble` also accepts the following options:
