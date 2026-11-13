@@ -10,6 +10,7 @@ dependencies = [
     "camb>=1.6.4",
     "numpy>=2",
     "pydoe>=1.5.0",
+    "sim-engine",
     "tqdm>=4.68.4",
 ]
 
@@ -19,3 +20,6 @@ nbody-setup = "nbody_setup:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+sim-engine = { git = "https://github.com/smsutherland/sim-engine" }
