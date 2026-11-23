@@ -1,10 +1,10 @@
 import typing as T
-from argparse import ArgumentParser, Namespace
 from pathlib import Path
+
+from sim_engine import Task
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.mpi import MpiMode
 
 from .gadget import Gadget
 
@@ -13,23 +13,6 @@ class Simulator(T.Protocol):
     """IC formats which this simulator can natively accept."""
 
     supported_ic_formats: T.ClassVar[list[IcFormat]]
-    mpi_mode: T.ClassVar[MpiMode]
-
-    @classmethod
-    def args(cls, parser: ArgumentParser):
-        """
-        If the simulation code requires any additional options to be provided,
-        you may specify them here. Arguments can and should be set as "required"
-        if they are needed for the initial condition code. This will not
-        conflict with other simulation codes, as only the selected code will
-        have its arguments added to the parser.
-        """
-
-    def __init__(self, args: Namespace):
-        """
-        Extract whatever command line options are needed to initialize the
-        simulator class.
-        """
 
     def setup(
         self,
@@ -39,8 +22,7 @@ class Simulator(T.Protocol):
         boxsize: float,
         N: int,
         ic_format: IcFormat,
-        invocation_command: str,
-    ):
+    ) -> list[Task]:
         """
         Prepare a directory to have the simulation code run. The code itself
         should **not** be run here. `target` is a path to the directory where
@@ -66,4 +48,4 @@ class Simulator(T.Protocol):
         1. Load any modules.
         """
 
-sim_options: dict[str, type[Simulator]] = {"gadget": Gadget}
+__all__ = ["Gadget", "Simulator"]

@@ -1,39 +1,27 @@
 import os
-import shutil
 import typing as T
-from argparse import ArgumentParser, Namespace
 from pathlib import Path
+
+from sim_engine import Task
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.mpi import MpiMode
 
 
 class Gadget:
     supported_ic_formats: T.ClassVar[list[IcFormat]] = [IcFormat.Gadget1]
-    mpi_mode: T.ClassVar[MpiMode] = MpiMode.PerCore
 
     gadget: Path
+    modules: list[str]
 
-    @classmethod
-    def args(cls, parser: ArgumentParser):
-        gadget = shutil.which("P-Gadget3")
-
-        parser.add_argument(
-            "--gadget",
-            type=Path,
-            default=gadget,
-            help="Path to gadget executable. May be omitted if P-Gadget3 is in PATH.",
-            required=gadget is None,
-        )
-
-    def __init__(self, args: Namespace):
-        self.gadget: Path = args.gadget.expanduser().resolve()
+    def __init__(self, gadget: Path, modules: list[str] | None = None):
+        self.gadget: Path = gadget.resolve()
 
         if not self.gadget.exists():
             raise RuntimeError(f"{self.gadget} does not exist")
         if not os.access(self.gadget, os.X_OK):
             raise RuntimeError(f"{self.gadget} is not executable")
+        self.modules = modules or []
 
     def setup(
         self,
@@ -43,8 +31,7 @@ class Gadget:
         boxsize: float,
         N: int,
         ic_format: IcFormat,
-        invocation_command: str,
-    ):
+    ) -> list[Task]:
         match ic_format:
             case IcFormat.Gadget1:
                 ic_format_int = 1
@@ -136,14 +123,15 @@ class Gadget:
             f.write("# Scale Factor\n")
             f.writelines(str(t) + "\n" for t in _output_times)
 
-        jobscript = _run_file.format(
-            ic_format=ic_format_int,
-            last_snap=len(_output_times) - 1,
-            gadget=self.gadget,
-            invocation=invocation_command,
-        )
-        with open(target / "run.sh", "w") as f:
-            f.write(jobscript)
+        return [
+            Task(
+                [str(self.gadget), "G3.param"],
+                1,
+                64,
+                modules=self.modules,
+                cwd=target,
+            )
+        ]
 
 
 # fmt: off
@@ -173,23 +161,3 @@ _output_times = [
     0.953721949,   0.976586888,   1.0,
 ]
 # fmt: on
-
-_run_file = """#!/bin/bash
-set -e
-# Has the simulation already run?
-if [ ! -e snap_{last_snap:03d}.hdf5 ]; then
-    # It hasn't! Let's run it!
-
-    echo job id: $SLURM_JOBID | tee -a gadget.log
-    if [[ $SLURM_ARRAY_TASK_ID ]]; then 
-        echo job array id: $SLURM_ARRAY_TASK_ID | tee -a gadget.log
-    fi
-
-    if [ -d restartfiles ]; then
-        # restart
-        restart=1
-    fi
-
-    {invocation} {gadget} G3.param $restart >> gadget.log 2>> gadget.err
-fi
-"""

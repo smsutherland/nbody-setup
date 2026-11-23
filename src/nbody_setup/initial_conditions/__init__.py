@@ -1,35 +1,15 @@
 import typing as T
-from argparse import ArgumentParser, Namespace
 from pathlib import Path
+
+from sim_engine import Task
 
 from nbody_setup.conversion import IcFormat
 from nbody_setup.cosmology import Cosmology
-from nbody_setup.sim import MpiMode
 
 from .twolpt import TwoLPT
 
 
 class InitialConditions(T.Protocol):
-    mpi_mode: T.ClassVar[MpiMode]
-
-    @classmethod
-    def args(cls, parser: ArgumentParser):
-        """
-        If the initial condition code requires any additional options to be
-        provided, you may specify them here. Arguments can and should be set as
-        "required" if they are needed for the initial condition code. This will
-        not conflict with other initial condition codes, as only the selected
-        code will have its arguments added to the parser.
-        """
-        ...
-
-    def __init__(self, args: Namespace):
-        """
-        Extract whatever command line options are needed to initialize the
-        initial conditions class.
-        """
-        ...
-
     def setup(
         self,
         ic_dir: Path,
@@ -38,8 +18,7 @@ class InitialConditions(T.Protocol):
         boxsize: float,
         N: int,
         target_formats: list[IcFormat],
-        invocation_command: str,
-    ) -> IcFormat:
+    ) -> tuple[IcFormat, list[Task]]:
         """
         Prepare a directory to have the initial conditions code run. The code
         itself should **not** be run here. `ic_dir` is a path to the directory
@@ -64,5 +43,4 @@ class InitialConditions(T.Protocol):
         """
         ...
 
-
-ic_options: dict[str, type[InitialConditions]] = {"2lpt": TwoLPT}
+__all__ = ["InitialConditions", "TwoLPT"]

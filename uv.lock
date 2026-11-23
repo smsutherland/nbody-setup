@@ -475,7 +475,7 @@ wheels = [
 [[package]]
 name = "sim-engine"
 version = "0.1.0"
-source = { git = "https://github.com/smsutherland/sim-engine#568c6c55cfaef03af2add8dc32adbb090e623eec" }
+source = { git = "https://github.com/smsutherland/sim-engine#0b7f71756d78b88edefaa4db6b6df49e76f6548f" }
 dependencies = [
     { name = "cloudpickle" },
 ]
