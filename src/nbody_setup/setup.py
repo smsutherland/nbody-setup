@@ -21,6 +21,7 @@ def setup_run(
     N: int,
     ic: InitialConditions,
     simulator: Simulator,
+    compress: bool = False,
 ) -> list[Task]:
     target.mkdir(parents=True, exist_ok=True)
 
@@ -47,12 +48,33 @@ def setup_run(
         ic_tasks,
         cwd=ic_dir,
     )
-    sim_tasks = simulator.setup(target, cosmology, seed, boxsize, N, convert_to)
+    snap_format, sim_tasks = simulator.setup(
+        target, cosmology, seed, boxsize, N, convert_to
+    )
     for t in sim_tasks:
         t.add_deps(ic_tasks)
         t.add_deps(convert_task)
 
-    return [*ic_tasks, convert_task, *sim_tasks]
+    if compress:
+
+        def compression_function(snapshot: Path):
+            snap_format.compress(
+                snapshot, snapshot.with_suffix(snapshot.suffix + ".compressed")
+            )
+            snapshot.with_suffix(snapshot.suffix + ".compressed").rename(snapshot)
+
+        compression_tasks = [
+            PyTask(
+                functools.partial(compression_function, Path(f"snap_{i:03d}")),
+                dependencies=sim_tasks,
+                cwd=target,
+            )
+            for i in range(91)
+        ]
+    else:
+        compression_tasks = []
+
+    return [*ic_tasks, convert_task, *sim_tasks, *compression_tasks]
 
 
 @T.overload
@@ -62,6 +84,7 @@ def ensemble(
     simulator: Simulator,
     ic: InitialConditions,
     flatten: T.Literal[True],
+    compress: bool,
 ) -> list[Task]: ...
 @T.overload
 def ensemble(
@@ -70,6 +93,7 @@ def ensemble(
     simulator: Simulator,
     ic: InitialConditions,
     flatten: T.Literal[False],
+    compress: bool,
 ) -> list[list[Task]]: ...
 def ensemble(
     basename: Path | None,
@@ -77,6 +101,7 @@ def ensemble(
     simulator: Simulator,
     ic: InitialConditions,
     flatten: bool = True,
+    compress: bool = False,
 ) -> list[Task] | list[list[Task]]:
     parameter_table: Table = Table.read(table, format="ascii")
     defaults = {
@@ -130,6 +155,7 @@ def ensemble(
                 row["N"],
                 ic,
                 simulator,
+                compress,
             )
         )
     if flatten:

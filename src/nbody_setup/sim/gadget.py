@@ -31,10 +31,12 @@ class Gadget:
         boxsize: float,
         N: int,
         ic_format: Format,
-    ) -> list[Task]:
+    ) -> tuple[Format, list[Task]]:
         match ic_format:
             case Format.Gadget1:
                 ic_format_int = 1
+            case Format.GadgetHDF5:
+                ic_format_int = 3
             case never:
                 T.assert_never(never)
 
@@ -123,7 +125,7 @@ class Gadget:
             f.write("# Scale Factor\n")
             f.writelines(str(t) + "\n" for t in _output_times)
 
-        return [
+        return Format.GadgetHDF5, [
             Task(
                 [str(self.gadget), "G3.param"],
                 1,

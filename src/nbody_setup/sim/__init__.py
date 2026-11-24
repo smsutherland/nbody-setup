@@ -22,7 +22,7 @@ class Simulator(T.Protocol):
         boxsize: float,
         N: int,
         ic_format: Format,
-    ) -> list[Task]:
+    ) -> tuple[Format, list[Task]]:
         """
         Prepare a directory to have the simulation code run. The code itself
         should **not** be run here. `target` is a path to the directory where
@@ -47,5 +47,6 @@ class Simulator(T.Protocol):
         The script should NOT:
         1. Load any modules.
         """
+
 
 __all__ = ["Gadget", "Simulator"]

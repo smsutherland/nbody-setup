@@ -8,6 +8,7 @@ requires-python = ">=3.11"
 dependencies = [
     "astropy>=8.0.1",
     "camb>=1.6.4",
+    "h5py>=3.16.0",
     "numpy>=2",
     "pydoe>=1.5.0",
     "sim-engine",
