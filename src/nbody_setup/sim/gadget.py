@@ -4,12 +4,12 @@ from pathlib import Path
 
 from sim_engine import Task
 
-from nbody_setup.conversion import IcFormat
+from nbody_setup.conversion import Format
 from nbody_setup.cosmology import Cosmology
 
 
 class Gadget:
-    supported_ic_formats: T.ClassVar[list[IcFormat]] = [IcFormat.Gadget1]
+    supported_ic_formats: T.ClassVar[list[Format]] = [Format.Gadget1]
 
     gadget: Path
     modules: list[str]
@@ -30,10 +30,10 @@ class Gadget:
         seed: int,
         boxsize: float,
         N: int,
-        ic_format: IcFormat,
+        ic_format: Format,
     ) -> list[Task]:
         match ic_format:
-            case IcFormat.Gadget1:
+            case Format.Gadget1:
                 ic_format_int = 1
             case never:
                 T.assert_never(never)

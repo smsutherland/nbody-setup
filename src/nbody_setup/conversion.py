@@ -3,16 +3,16 @@ from enum import StrEnum, auto
 from pathlib import Path
 
 
-class IcFormat(StrEnum):
+class Format(StrEnum):
     Gadget1 = auto()
 
-    def convert_to(self, to: "IcFormat", input_name: Path, output_name: Path):
+    def convert_to(self, to: "Format", input_name: Path, output_name: Path):
         input_name = input_name.resolve()
         output_name = output_name.resolve()
         samefile = input_name == output_name
 
         match (self, to):
-            case (IcFormat.Gadget1, IcFormat.Gadget1):
+            case (Format.Gadget1, Format.Gadget1):
                 if not samefile:
                     i = 0
                     while (input_file := input_name.with_suffix(f".{i}")).exists():

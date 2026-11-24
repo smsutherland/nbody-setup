@@ -3,7 +3,7 @@ from pathlib import Path
 
 from sim_engine import Task
 
-from nbody_setup.conversion import IcFormat
+from nbody_setup.conversion import Format
 from nbody_setup.cosmology import Cosmology
 
 from .twolpt import TwoLPT
@@ -17,8 +17,8 @@ class InitialConditions(T.Protocol):
         seed: int,
         boxsize: float,
         N: int,
-        target_formats: list[IcFormat],
-    ) -> tuple[IcFormat, list[Task]]:
+        target_formats: list[Format],
+    ) -> tuple[Format, list[Task]]:
         """
         Prepare a directory to have the initial conditions code run. The code
         itself should **not** be run here. `ic_dir` is a path to the directory

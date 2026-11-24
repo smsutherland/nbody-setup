@@ -3,7 +3,7 @@ from pathlib import Path
 
 from sim_engine import Task
 
-from nbody_setup.conversion import IcFormat
+from nbody_setup.conversion import Format
 from nbody_setup.cosmology import Cosmology
 
 from .gadget import Gadget
@@ -12,7 +12,7 @@ from .gadget import Gadget
 class Simulator(T.Protocol):
     """IC formats which this simulator can natively accept."""
 
-    supported_ic_formats: T.ClassVar[list[IcFormat]]
+    supported_ic_formats: T.ClassVar[list[Format]]
 
     def setup(
         self,
@@ -21,7 +21,7 @@ class Simulator(T.Protocol):
         seed: int,
         boxsize: float,
         N: int,
-        ic_format: IcFormat,
+        ic_format: Format,
     ) -> list[Task]:
         """
         Prepare a directory to have the simulation code run. The code itself

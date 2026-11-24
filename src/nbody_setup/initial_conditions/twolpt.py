@@ -3,7 +3,7 @@ from pathlib import Path
 
 from sim_engine import Task
 
-from nbody_setup.conversion import IcFormat
+from nbody_setup.conversion import Format
 from nbody_setup.cosmology import Cosmology
 from nbody_setup.run_camb import camb_task
 
@@ -32,8 +32,8 @@ class TwoLPT:
         seed: int,
         boxsize: float,
         N: int,
-        target_formats: list[IcFormat],
-    ) -> tuple[IcFormat, list[Task]]:
+        target_formats: list[Format],
+    ) -> tuple[Format, list[Task]]:
         twolpt_params = {
             "Nmesh": N * 2,
             "Nsample": N,
@@ -94,4 +94,4 @@ class TwoLPT:
             modules=self.modules,
         )
 
-        return IcFormat.Gadget1, [camb, twolpt_task]
+        return Format.Gadget1, [camb, twolpt_task]
